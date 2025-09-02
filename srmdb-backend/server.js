@@ -2,30 +2,19 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const axios = require("axios");
 const { Server } = require("socket.io");
 require("dotenv").config();
 
 const app = express();
-const PORT = 5000;
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const SECRET_KEY = process.env.SECRET_KEY || "srmdb2025";
-const path = require("path");
+const PORT = process.env.PORT || 5000;
 
-// TMDB_API_KEY kontrolü
-if (!TMDB_API_KEY) {
-  console.error(
-    "❌ TMDB_API_KEY çevre değişkeni tanımlı değil! Lütfen .env dosyasında TMDB_API_KEY tanımlayın."
-  );
-  process.exit(1);
-}
-
-// Middleware'ler
+// Middleware
 app.use(
   cors({
-    origin: "https://srmdb.vercel.app", // Vercel frontend URL’in
+    origin: [
+      "http://localhost:3000", // local test
+      "https://srmdb-salihapekers-projects.vercel.app", // Vercel frontend
+    ],
     credentials: true,
   })
 );
@@ -36,18 +25,30 @@ app.use(cookieParser());
 // MongoDB Bağlantısı
 mongoose
   .connect(
-    "mongodb+srv://Salihapeker:srmdbdatabase@cluster0.ijoxsj9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    process.env.MONGO_URI ||
+      "mongodb+srv://Salihapeker:srmdbdatabase@cluster0.ijoxsj9.mongodb.net/srmdb?retryWrites=true&w=majority"
   )
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
+// Loglama middleware
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.url}`);
+  next();
+});
+
 // Socket.io
 const server = app.listen(PORT, () => {
-  console.log(`🚀 SRMDB Server running on http://localhost:${PORT}`);
-  console.log(`📖 API Docs: http://localhost:${PORT}/api`);
+  console.log(`🚀 SRMDB Server running on port ${PORT}`);
 });
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", credentials: true },
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "https://srmdb-salihapekers-projects.vercel.app",
+    ],
+    credentials: true,
+  },
 });
 
 io.on("connection", (socket) => {
@@ -55,12 +56,6 @@ io.on("connection", (socket) => {
     socket.join(userId);
     console.log(`User ${userId} joined socket`);
   });
-});
-
-// Loglama Middleware
-app.use((req, res, next) => {
-  console.log(`🌐 ${req.method} ${req.url}`);
-  next();
 });
 
 // Kullanıcı Modeli
