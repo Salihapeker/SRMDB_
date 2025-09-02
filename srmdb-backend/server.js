@@ -25,16 +25,19 @@ if (!TMDB_API_KEY) {
 // Middleware'ler
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://srmdb.vercel.app", // Vercel frontend URL’in
     credentials: true,
   })
 );
+
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 // MongoDB Bağlantısı
 mongoose
-  .connect("mongodb://localhost:27017/srmdb")
+  .connect(
+    "mongodb+srv://Salihapeker:srmdbdatabase@cluster0.ijoxsj9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  )
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
