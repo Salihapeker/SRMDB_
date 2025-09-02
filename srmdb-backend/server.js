@@ -8,17 +8,29 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS ayarları
+// CORS ayarları - DÜZELTİLMİŞ
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "*.salihapekers-projects.vercel.app", // Tüm vercel alt domainlerini kapsar
+        "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app", // Tam URL
+        /^https:\/\/.*\.vercel\.app$/, // Regex pattern ile tüm vercel domainleri
       ];
-      if (!origin || allowedOrigins.some((o) => origin.endsWith(o))) {
+
+      // Origin yoksa (Postman gibi) veya izin verilen listede varsa kabul et
+      if (!origin) return callback(null, true);
+
+      // String eşleşmesi
+      if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
         return callback(null, true);
       }
+
+      // Regex eşleşmesi
+      if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
+        return callback(null, true);
+      }
+
       return callback(new Error("CORS politikası tarafından engellendi"));
     },
     credentials: true,
@@ -40,22 +52,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io
+// Socket.io - DÜZELTİLMİŞ
 const server = app.listen(PORT, () => {
   console.log(`🚀 SRMDB Server running on port ${PORT}`);
 });
+
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "*.salihapekers-projects.vercel.app",
-      ];
-      if (!origin || allowedOrigins.some((o) => origin.endsWith(o))) {
-        return callback(null, true);
-      }
-      return callback(new Error("CORS politikası tarafından engellendi"));
-    },
+    origin: [
+      "http://localhost:3000",
+      "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app",
+      /^https:\/\/.*\.vercel\.app$/,
+    ],
     credentials: true,
   },
 });

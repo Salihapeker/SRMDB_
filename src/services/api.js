@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL || "https://srmdb-backend.onrender.com", // Render backend URL’i
+  baseURL: "https://srmdb.onrender.com", // Render backend URL'iniz
   withCredentials: true,
   timeout: 15000,
 });
