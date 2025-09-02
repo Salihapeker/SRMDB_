@@ -20,27 +20,24 @@ if (!TMDB_API_KEY) {
   process.exit(1);
 }
 
-// CORS ayarları - Frontend origin'lerini tanımla
+// CORS ayarları
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        "http://localhost:3000", // Yerel geliştirme için
-        "https://srmdb.vercel.app", // Ana Vercel URL'iniz
-        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app", // Spesifik Vercel URL
-        /^https:\/\/srmdb-.*\.vercel\.app$/, // Tüm srmdb ile başlayan Vercel alt domainleri
-        /^https:\/\/.*-salihapekers-projects\.vercel\.app$/, // Tüm salihapekers-projects domainleri
+        "http://localhost:3000",
+        "https://srmdb.vercel.app",
+        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app",
+        /^https:\/\/srmdb-.*\.vercel\.app$/,
+        /^https:\/\/.*-salihapekers-projects\.vercel\.app$/,
       ];
 
-      // Origin yoksa (örneğin Postman gibi araçlar) veya izin verilen listede ise kabul et
       if (!origin) return callback(null, true);
 
-      // String tabanlı eşleşme kontrolü
       if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
         return callback(null, true);
       }
 
-      // Regex tabanlı eşleşme kontrolü
       if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
         return callback(null, true);
       }
@@ -48,18 +45,27 @@ app.use(
       console.log("❌ CORS blocked origin:", origin);
       return callback(new Error("CORS politikası tarafından engellendi"));
     },
-    credentials: true, // Çerezler ve kimlik bilgileri için
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // İzin verilen HTTP metodları
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"], // İzin verilen başlıklar
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
 // Preflight OPTIONS requests için özel handler
-app.options("*", cors());
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Content-Length, X-Requested-With, Cookie"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
 
 // Middleware'ler
-app.use(express.json({ limit: "10mb" })); // JSON body parser, 10MB limite kadar
-app.use(cookieParser()); // Çerezleri parse eder
+app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
 
 // MongoDB bağlantısı
 mongoose
@@ -116,7 +122,7 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-// Yorum Modeli
+// Diğer modeller
 const reviewSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   movieId: { type: String, required: true },
@@ -127,7 +133,6 @@ const reviewSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// Ortak Kütüphane Modeli
 const sharedLibrarySchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   favorites: [{ type: Object }],
@@ -141,13 +146,13 @@ const sharedLibrarySchema = new mongoose.Schema({
   ],
 });
 
-// Arşiv Modeli
 const archiveSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sharedLibrary: { type: Object },
   archivedAt: { type: Date, default: Date.now },
 });
 
+// Model tanımlamaları
 const User = mongoose.model("User", userSchema);
 const Review = mongoose.model("Review", reviewSchema);
 const SharedLibrary = mongoose.model("SharedLibrary", sharedLibrarySchema);
@@ -174,35 +179,49 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-// Socket.io setup - Server'ı app.listen'dan sonra tanımlayın
-const server = app.listen(PORT, () => {
-  console.log(`🚀 SRMDB Server running on port ${PORT}`);
-});
+// HTTP Server oluştur
+const server = require("http").createServer(app);
 
+// Socket.IO setup
 const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
+      "https://srmdb.vercel.app",
       "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app",
       /^https:\/\/srmdb-.*\.vercel\.app$/,
+      /^https:\/\/.*-salihapekers-projects\.vercel\.app$/,
     ],
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 io.on("connection", (socket) => {
+  console.log("🔌 User connected:", socket.id);
+
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined socket`);
+    console.log(`User ${userId} joined socket room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔌 User disconnected:", socket.id);
   });
 });
 
+// Routes
+
 // Root endpoint
 app.get("/", (req, res) => {
-  res.json({ message: "SRMDB API çalışıyor!" });
+  res.json({
+    message: "SRMDB API çalışıyor!",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// Health check endpoint
+// API Health check
 app.get("/api/health", async (req, res) => {
   try {
     const dbStatus = mongoose.connection.readyState;
@@ -223,24 +242,21 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// REGISTER - Hata yakalama iyileştirildi
+// REGISTER
 app.post("/api/auth/register", async (req, res) => {
   const { username, name, email, password, profilePicture } = req.body;
   console.log("📝 Register attempt:", { username, email });
 
   try {
-    // Input validation
     if (!username || !name || !email || !password) {
       return res.status(400).json({ message: "Tüm alanlar gerekli" });
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Geçersiz email formatı" });
     }
 
-    // Password validation
     if (password.length < 6) {
       return res.status(400).json({ message: "Şifre en az 6 karakter olmalı" });
     }
@@ -278,8 +294,8 @@ app.post("/api/auth/register", async (req, res) => {
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Production'da secure
-      sameSite: "lax", // strict yerine lax
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -298,7 +314,6 @@ app.post("/api/auth/register", async (req, res) => {
   } catch (error) {
     console.error("❌ Register error:", error);
 
-    // MongoDB duplicate key error
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({
@@ -339,11 +354,11 @@ app.post("/api/auth/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    console.log("✅ Login successful:", username);
+    console.log("✅ Login successful:", user.username);
     res.json({
       message: "Giriş başarılı",
       user: {
@@ -364,9 +379,9 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// REFRESH TOKEN - Route düzeltildi
+// REFRESH TOKEN
 app.post("/api/auth/refresh", async (req, res) => {
-  const refreshToken = req.cookies.refreshToken || req.cookies.token; // token'ı da kontrol et
+  const refreshToken = req.cookies.refreshToken || req.cookies.token;
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token gerekli" });
   }
@@ -379,13 +394,13 @@ app.post("/api/auth/refresh", async (req, res) => {
     }
 
     const newToken = jwt.sign({ id: user._id }, SECRET_KEY, {
-      expiresIn: "7d", // 15m yerine 7d
+      expiresIn: "7d",
     });
     res.cookie("token", newToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ message: "Token yenilendi" });
@@ -402,12 +417,12 @@ app.post("/api/auth/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(200).json({ message: "Çıkış yapıldı" });
 });
 
-// Kullanıcı bilgisi
+// User info
 app.get("/api/auth/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
@@ -437,7 +452,7 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
   }
 });
 
-// LIBRARY
+// LIBRARY endpoints
 app.get("/api/library", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("library");
@@ -455,21 +470,21 @@ app.get("/api/library", authMiddleware, async (req, res) => {
   }
 });
 
-// LIBRARY ADD
+// Library ADD
 app.post("/api/library/:category", authMiddleware, async (req, res) => {
   const { category } = req.params;
   let movieData = req.body.movieData || req.body.item;
 
-  if (
-    ![
-      "favorites",
-      "watchlist",
-      "disliked",
-      "watched",
-      "liked",
-      "watchedTogether",
-    ].includes(category)
-  ) {
+  const validCategories = [
+    "favorites",
+    "watchlist",
+    "disliked",
+    "watched",
+    "liked",
+    "watchedTogether",
+  ];
+
+  if (!validCategories.includes(category)) {
     console.error(`❌ Invalid category: ${category}`);
     return res.status(400).json({ message: "Geçersiz kategori" });
   }
@@ -492,6 +507,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
+    // Business logic validations
     if (
       category === "favorites" &&
       user.library.disliked.some((i) => i.id === movieData.id)
@@ -500,6 +516,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Bu içerik beğenilmeyenlerde, favorilere eklenemez.",
       });
     }
+
     if (
       category === "disliked" &&
       user.library.favorites.some((i) => i.id === movieData.id)
@@ -508,6 +525,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Bu içerik favorilerde, beğenilmeyenlere eklenemez.",
       });
     }
+
     if (
       (category === "favorites" || category === "disliked") &&
       !user.library.watched.some((i) => i.id === movieData.id)
@@ -516,6 +534,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Sadece izlenen içerikler favori veya beğenilmeyen olabilir.",
       });
     }
+
     if (
       category === "watchlist" &&
       user.library.watched.some((i) => i.id === movieData.id)
@@ -524,6 +543,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         .status(400)
         .json({ message: "Bu içerik izlenmiş, izleneceklere eklenemez." });
     }
+
     if (category === "watchedTogether" && !user.partner) {
       return res
         .status(400)
@@ -535,6 +555,8 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     }
 
     user.library[category].push(movieData);
+
+    // Handle shared library for watchedTogether
     if (category === "watchedTogether" && user.partner) {
       const sharedLibrary = await SharedLibrary.findOne({
         users: { $all: [user._id, user.partner] },
@@ -556,6 +578,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     await user.save();
     io.to(user._id.toString()).emit("libraryUpdate");
     io.to(user._id.toString()).emit("notificationUpdate");
+
     console.log(`✅ ${category}'e eklendi:`, movieData.title || movieData.name);
     res.json({ message: "Başarıyla eklendi", library: user.library });
   } catch (error) {
@@ -564,20 +587,20 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
   }
 });
 
-// 🗑️ LIBRARY DELETE
+// Library DELETE
 app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
   const { category, id } = req.params;
 
-  if (
-    ![
-      "favorites",
-      "watchlist",
-      "disliked",
-      "watched",
-      "liked",
-      "watchedTogether",
-    ].includes(category)
-  ) {
+  const validCategories = [
+    "favorites",
+    "watchlist",
+    "disliked",
+    "watched",
+    "liked",
+    "watchedTogether",
+  ];
+
+  if (!validCategories.includes(category)) {
     console.error(`❌ Invalid category: ${category}`);
     return res.status(400).json({ message: "Geçersiz kategori" });
   }
@@ -592,6 +615,7 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
     const beforeCount = user.library[category].length;
 
     if (category === "watched" || category === "watchedTogether") {
+      // Remove from all related categories when removing from watched
       user.library.watched = user.library.watched.filter(
         (item) => item.id.toString() !== id
       );
@@ -607,6 +631,7 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
       user.library.liked = user.library.liked.filter(
         (item) => item.id.toString() !== id
       );
+
       if (user.partner) {
         const sharedLibrary = await SharedLibrary.findOne({
           users: { $all: [user._id, user.partner] },
@@ -619,9 +644,10 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
             (item) => item.id.toString() !== id
           );
           await sharedLibrary.save();
-          io.to(user.partner).emit("libraryUpdate");
+          io.to(user.partner.toString()).emit("libraryUpdate");
         }
       }
+
       user.notifications.push({
         type: "library_update",
         message: `İçerik ID ${id} izlenenlerden kaldırıldı`,
@@ -641,8 +667,8 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
     }
 
     await user.save();
-    io.to(user._id).emit("libraryUpdate");
-    io.to(user._id).emit("notificationUpdate");
+    io.to(user._id.toString()).emit("libraryUpdate");
+    io.to(user._id.toString()).emit("notificationUpdate");
 
     const afterCount = user.library[category].length;
     if (beforeCount === afterCount) {
@@ -1922,17 +1948,29 @@ app.put("/api/user/update", authMiddleware, async (req, res) => {
   }
 });
 
-// 404 Handler
-app.use((req, res) => {
-  console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
-  res.status(404).json({ message: `Route ${req.originalUrl} bulunamadı` });
+app.use((err, req, res, next) => {
+  console.error("❌ Global error handler:", err);
+  res.status(500).json({
+    error: "Internal server error",
+    message:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Something went wrong",
+  });
 });
 
-// Error Handler
-app.use((error, req, res, next) => {
-  console.error("💥 Global error:", error);
-  res.status(500).json({
-    message: "Beklenmeyen sunucu hatası",
-    error: process.env.NODE_ENV === "development" ? error.message : undefined,
+// 404 handler
+app.use("*", (req, res) => {
+  res.status(404).json({
+    error: "Route not found",
+    path: req.originalUrl,
+    method: req.method,
   });
+});
+
+// Server başlatma
+server.listen(PORT, () => {
+  console.log(`🚀 SRMDB Server running on port ${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`📋 Health check: http://localhost:${PORT}/health`);
 });
