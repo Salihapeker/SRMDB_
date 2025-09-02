@@ -4,33 +4,52 @@ const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 require("dotenv").config();
-
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 5000;
+const SECRET_KEY = process.env.JWT_SECRET || "fallback-secret-key";
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
+// Environment kontrolü
+if (!process.env.JWT_SECRET) {
+  console.warn("⚠️ JWT_SECRET environment variable not set, using fallback");
+}
+
+if (!TMDB_API_KEY) {
+  console.error("❌ TMDB_API_KEY environment variable is required");
+}
+
+console.log("🌐 Environment:", process.env.NODE_ENV || "development");
+console.log("📋 Health check: http://localhost:" + PORT + "/api/health");
 // CORS ayarları - DÜZELTİLMİŞ
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app", // Tam URL
-        /^https:\/\/.*\.vercel\.app$/, // Regex pattern ile tüm vercel domainleri
+        "https://srmdb-7vyspt79r-salihapekers-projects.vercel.app", // YENİ URL
+        /^https:\/\/srmdb-.*-salihapekers-projects\.vercel\.app$/, // Tüm deployment'ları kapsar
       ];
 
-      // Origin yoksa (Postman gibi) veya izin verilen listede varsa kabul et
       if (!origin) return callback(null, true);
 
-      // String eşleşmesi
-      if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
+      const isAllowed = allowedOrigins.some((pattern) => {
+        if (typeof pattern === "string") {
+          return pattern === origin;
+        }
+        if (pattern instanceof RegExp) {
+          return pattern.test(origin);
+        }
+        return false;
+      });
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
-      // Regex eşleşmesi
-      if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
-        return callback(null, true);
-      }
-
+      console.log("❌ CORS blocked origin:", origin);
       return callback(new Error("CORS politikası tarafından engellendi"));
     },
     credentials: true,
@@ -263,6 +282,7 @@ app.post("/api/auth/register", async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: process.env.NODE_ENV === "production" ? undefined : undefined, // Render'da domain belirleme
     });
 
     console.log("✅ User registered successfully:", username);
