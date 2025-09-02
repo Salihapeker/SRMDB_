@@ -2,12 +2,11 @@ import axios from "axios";
 
 // Backend URL'ini belirle
 const getBaseURL = () => {
-  // Production'da Render backend'inizi kullan
   if (process.env.NODE_ENV === "production") {
-    return "https://srmdb.onrender.com";
+    return "https://srmdb.onrender.com"; // Render backend
   }
-  // Development'da localhost kullan
-  return "http://localhost:5000";
+
+  return "http://localhost:5000"; // Development
 };
 
 const API = axios.create({
