@@ -3,10 +3,10 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-const bcrypt = require("bcryptjs"); // Şifreleme için
-const jwt = require("jsonwebtoken"); // JWT token oluşturmak için
-const axios = require("axios"); // HTTP istekleri için
-require("dotenv").config(); // Ortam değişkenlerini yükler
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,8 +26,10 @@ app.use(
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000", // Yerel geliştirme için
+        "https://srmdb.vercel.app", // Ana Vercel URL'iniz
         "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app", // Spesifik Vercel URL
         /^https:\/\/srmdb-.*\.vercel\.app$/, // Tüm srmdb ile başlayan Vercel alt domainleri
+        /^https:\/\/.*-salihapekers-projects\.vercel\.app$/, // Tüm salihapekers-projects domainleri
       ];
 
       // Origin yoksa (örneğin Postman gibi araçlar) veya izin verilen listede ise kabul et
@@ -43,11 +45,17 @@ app.use(
         return callback(null, true);
       }
 
+      console.log("❌ CORS blocked origin:", origin);
       return callback(new Error("CORS politikası tarafından engellendi"));
     },
     credentials: true, // Çerezler ve kimlik bilgileri için
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // İzin verilen HTTP metodları
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"], // İzin verilen başlıklar
   })
 );
+
+// Preflight OPTIONS requests için özel handler
+app.options("*", cors());
 
 // Middleware'ler
 app.use(express.json({ limit: "10mb" })); // JSON body parser, 10MB limite kadar
@@ -61,8 +69,15 @@ mongoose
 
 // Loglama middleware
 app.use((req, res, next) => {
-  console.log(`🌐 ${req.method} ${req.url}`);
+  console.log(
+    `🌐 ${req.method} ${req.url} from ${req.get("origin") || "unknown origin"}`
+  );
   next();
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
 // Kullanıcı Modeli
