@@ -3,15 +3,15 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-const bcrypt = require("bcryptjs"); // EKSIK IMPORT
-const jwt = require("jsonwebtoken"); // EKSIK IMPORT
-const axios = require("axios"); // EKSIK IMPORT
-require("dotenv").config();
+const bcrypt = require("bcryptjs"); // Şifreleme için
+const jwt = require("jsonwebtoken"); // JWT token oluşturmak için
+const axios = require("axios"); // HTTP istekleri için
+require("dotenv").config(); // Ortam değişkenlerini yükler
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Environment variables kontrolü
+// Ortam değişkenlerini kontrol et
 const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key-here";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -20,39 +20,40 @@ if (!TMDB_API_KEY) {
   process.exit(1);
 }
 
-// CORS ayarları - YENİ URL ile güncellendi
+// CORS ayarları - Frontend origin'lerini tanımla
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        "http://localhost:3000",
-        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app", // YENİ URL
-        /^https:\/\/srmdb-.*\.vercel\.app$/, // Tüm srmdb vercel domainleri
+        "http://localhost:3000", // Yerel geliştirme için
+        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app", // Spesifik Vercel URL
+        /^https:\/\/srmdb-.*\.vercel\.app$/, // Tüm srmdb ile başlayan Vercel alt domainleri
       ];
 
-      // Origin yoksa (Postman gibi) veya izin verilen listede varsa kabul et
+      // Origin yoksa (örneğin Postman gibi araçlar) veya izin verilen listede ise kabul et
       if (!origin) return callback(null, true);
 
-      // String eşleşmesi
+      // String tabanlı eşleşme kontrolü
       if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
         return callback(null, true);
       }
 
-      // Regex eşleşmesi
+      // Regex tabanlı eşleşme kontrolü
       if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
         return callback(null, true);
       }
 
       return callback(new Error("CORS politikası tarafından engellendi"));
     },
-    credentials: true,
+    credentials: true, // Çerezler ve kimlik bilgileri için
   })
 );
 
-app.use(express.json({ limit: "10mb" }));
-app.use(cookieParser());
+// Middleware'ler
+app.use(express.json({ limit: "10mb" })); // JSON body parser, 10MB limite kadar
+app.use(cookieParser()); // Çerezleri parse eder
 
-// MongoDB Bağlantısı
+// MongoDB bağlantısı
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
