@@ -20,7 +20,7 @@ if (!TMDB_API_KEY) {
   process.exit(1);
 }
 
-// CORS ayarları
+// ✅ CORS ayarları
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -43,13 +43,11 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-    preflightContinue: false, // 👈 OPTIONS otomatik handle edilir
   })
 );
 
-// Preflight OPTIONS requests için özel handler
-// Tüm OPTIONS isteklerini yakala
-app.options(/.*/, (req, res) => {
+// ✅ Express 5 OPTIONS preflight fix
+app.options("/*", (req, res) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
@@ -64,13 +62,13 @@ app.options(/.*/, (req, res) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// MongoDB bağlantısı
+// ✅ MongoDB bağlantısı
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Loglama middleware
+// ✅ Loglama middleware
 app.use((req, res, next) => {
   console.log(
     `🌐 ${req.method} ${req.url} from ${req.get("origin") || "unknown origin"}`
@@ -78,9 +76,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// ✅ Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// ✅ 404 handler (Express 5 uyumlu)
+// app.use("*", …) yerine regex ile yaz
+app.use(/.*/, (req, res) => {
+  res.status(404).json({
+    error: "Route not found",
+    path: req.originalUrl,
+    method: req.method,
+  });
 });
 
 // Kullanıcı Modeli
@@ -1953,15 +1961,6 @@ app.use((err, req, res, next) => {
       process.env.NODE_ENV === "development"
         ? err.message
         : "Something went wrong",
-  });
-});
-
-// 404 handler
-app.use("*", (req, res) => {
-  res.status(404).json({
-    error: "Route not found",
-    path: req.originalUrl,
-    method: req.method,
   });
 });
 
