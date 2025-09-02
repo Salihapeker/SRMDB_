@@ -3,19 +3,31 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
+const bcrypt = require("bcryptjs"); // EKSIK IMPORT
+const jwt = require("jsonwebtoken"); // EKSIK IMPORT
+const axios = require("axios"); // EKSIK IMPORT
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS ayarları - DÜZELTİLMİŞ
+// Environment variables kontrolü
+const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key-here";
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+
+if (!TMDB_API_KEY) {
+  console.error("❌ TMDB_API_KEY environment variable is required");
+  process.exit(1);
+}
+
+// CORS ayarları - YENİ URL ile güncellendi
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app", // Tam URL
-        /^https:\/\/.*\.vercel\.app$/, // Regex pattern ile tüm vercel domainleri
+        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app", // YENİ URL
+        /^https:\/\/srmdb-.*\.vercel\.app$/, // Tüm srmdb vercel domainleri
       ];
 
       // Origin yoksa (Postman gibi) veya izin verilen listede varsa kabul et
@@ -52,28 +64,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io - DÜZELTİLMİŞ
-const server = app.listen(PORT, () => {
-  console.log(`🚀 SRMDB Server running on port ${PORT}`);
-});
-
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app",
-      /^https:\/\/.*\.vercel\.app$/,
-    ],
-    credentials: true,
-  },
-});
-
-io.on("connection", (socket) => {
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined socket`);
-  });
-});
 // Kullanıcı Modeli
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
@@ -99,7 +89,6 @@ const userSchema = new mongoose.Schema({
         default: "partner_request",
       },
       message: { type: String },
-      // Burayı değiştirin - 'read' değerini ekleyin
       status: {
         type: String,
         enum: ["pending", "accepted", "rejected", "read"],
@@ -110,6 +99,7 @@ const userSchema = new mongoose.Schema({
     },
   ],
 });
+
 // Yorum Modeli
 const reviewSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -135,7 +125,7 @@ const sharedLibrarySchema = new mongoose.Schema({
   ],
 });
 
-// Arşiv Modeli (Eski ortak kütüphane verileri için)
+// Arşiv Modeli
 const archiveSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sharedLibrary: { type: Object },
@@ -147,7 +137,7 @@ const Review = mongoose.model("Review", reviewSchema);
 const SharedLibrary = mongoose.model("SharedLibrary", sharedLibrarySchema);
 const Archive = mongoose.model("Archive", archiveSchema);
 
-// 🔐 Auth Middleware
+// Auth Middleware
 const authMiddleware = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -168,19 +158,75 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-// 🏠 Root endpoint
+// Socket.io setup - Server'ı app.listen'dan sonra tanımlayın
+const server = app.listen(PORT, () => {
+  console.log(`🚀 SRMDB Server running on port ${PORT}`);
+});
+
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app",
+      /^https:\/\/srmdb-.*\.vercel\.app$/,
+    ],
+    credentials: true,
+  },
+});
+
+io.on("connection", (socket) => {
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined socket`);
+  });
+});
+
+// Root endpoint
 app.get("/", (req, res) => {
   res.json({ message: "SRMDB API çalışıyor!" });
 });
 
-// 📝 REGISTER
+// Health check endpoint
+app.get("/api/health", async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    const statuses = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+
+    res.json({
+      status: "OK",
+      database: statuses[dbStatus],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// REGISTER - Hata yakalama iyileştirildi
 app.post("/api/auth/register", async (req, res) => {
   const { username, name, email, password, profilePicture } = req.body;
   console.log("📝 Register attempt:", { username, email });
 
   try {
+    // Input validation
     if (!username || !name || !email || !password) {
       return res.status(400).json({ message: "Tüm alanlar gerekli" });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Geçersiz email formatı" });
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Şifre en az 6 karakter olmalı" });
     }
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -216,11 +262,12 @@ app.post("/api/auth/register", async (req, res) => {
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production", // Production'da secure
+      sameSite: "lax", // strict yerine lax
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ User registered successfully:", username);
     res.status(201).json({
       message: "Kayıt başarılı",
       user: {
@@ -234,11 +281,23 @@ app.post("/api/auth/register", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Register error:", error);
-    res.status(500).json({ message: "Sunucu hatası" });
+
+    // MongoDB duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        message: `Bu ${field === "email" ? "email" : "kullanıcı adı"} zaten kayıtlı`,
+      });
+    }
+
+    res.status(500).json({
+      message: "Sunucu hatası",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 
-// 🔑 LOGIN
+// LOGIN
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   console.log("🔑 Login attempt:", { email });
@@ -263,11 +322,12 @@ app.post("/api/auth/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ Login successful:", username);
     res.json({
       message: "Giriş başarılı",
       user: {
@@ -281,13 +341,16 @@ app.post("/api/auth/login", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Login error:", error);
-    res.status(500).json({ message: "Sunucu hatası" });
+    res.status(500).json({
+      message: "Sunucu hatası",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 
-// 🔄 REFRESH TOKEN
-app.post("/auth/refresh", async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+// REFRESH TOKEN - Route düzeltildi
+app.post("/api/auth/refresh", async (req, res) => {
+  const refreshToken = req.cookies.refreshToken || req.cookies.token; // token'ı da kontrol et
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token gerekli" });
   }
@@ -300,13 +363,13 @@ app.post("/auth/refresh", async (req, res) => {
     }
 
     const newToken = jwt.sign({ id: user._id }, SECRET_KEY, {
-      expiresIn: "15m",
+      expiresIn: "7d", // 15m yerine 7d
     });
     res.cookie("token", newToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün
     });
 
     res.json({ message: "Token yenilendi" });
@@ -318,12 +381,12 @@ app.post("/auth/refresh", async (req, res) => {
   }
 });
 
-// 🚪 LOGOUT
+// LOGOUT
 app.post("/api/auth/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
   res.status(200).json({ message: "Çıkış yapıldı" });
 });
@@ -358,7 +421,7 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
   }
 });
 
-// 📚 LIBRARY
+// LIBRARY
 app.get("/api/library", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("library");
@@ -376,7 +439,7 @@ app.get("/api/library", authMiddleware, async (req, res) => {
   }
 });
 
-// ➕ LIBRARY ADD
+// LIBRARY ADD
 app.post("/api/library/:category", authMiddleware, async (req, res) => {
   const { category } = req.params;
   let movieData = req.body.movieData || req.body.item;
@@ -463,7 +526,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
       if (sharedLibrary) {
         sharedLibrary.watched.push(movieData);
         await sharedLibrary.save();
-        io.to(user.partner).emit("libraryUpdate");
+        io.to(user.partner.toString()).emit("libraryUpdate");
       }
     }
 
@@ -475,8 +538,8 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     });
 
     await user.save();
-    io.to(user._id).emit("libraryUpdate");
-    io.to(user._id).emit("notificationUpdate");
+    io.to(user._id.toString()).emit("libraryUpdate");
+    io.to(user._id.toString()).emit("notificationUpdate");
     console.log(`✅ ${category}'e eklendi:`, movieData.title || movieData.name);
     res.json({ message: "Başarıyla eklendi", library: user.library });
   } catch (error) {
@@ -1843,13 +1906,17 @@ app.put("/api/user/update", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ 404 Handler
+// 404 Handler
 app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ message: `Route ${req.originalUrl} bulunamadı` });
 });
 
-// 🚨 Error Handler
+// Error Handler
 app.use((error, req, res, next) => {
   console.error("💥 Global error:", error);
-  res.status(500).json({ message: "Beklenmeyen sunucu hatası" });
+  res.status(500).json({
+    message: "Beklenmeyen sunucu hatası",
+    error: process.env.NODE_ENV === "development" ? error.message : undefined,
+  });
 });
