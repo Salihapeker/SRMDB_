@@ -10,17 +10,15 @@ const PORT = process.env.PORT || 5000;
 
 // Dinamik CORS yapılandırması
 const allowedOrigins = [
-  "http://localhost:3000", // local test
-  "https://srmdb-salihapekers-projects.vercel.app", // sabit URL varsa
-  /\.salihapekers-projects\.vercel\.app$/, // Tüm vercel alt domainlerini kapsar
+  "http://localhost:3000",
+  "https://srmdb-salihapekers-projects.vercel.app",
+  /\.salihapekers-projects\.vercel\.app$/,
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Origin yoksa (örneğin server-to-server istekler) izin ver
       if (!origin) return callback(null, true);
-      // İzin verilen origin'lerden biriyle eşleşiyorsa izin ver
       if (
         allowedOrigins.some((allowed) => {
           if (allowed instanceof RegExp) return allowed.test(origin);
@@ -71,7 +69,6 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-
 io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     socket.join(userId);
