@@ -3,91 +3,75 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ortam değişkenlerini kontrol et
-const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key-here";
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
-
-if (!TMDB_API_KEY) {
-  console.error("❌ TMDB_API_KEY environment variable is required");
-  process.exit(1);
-}
-
-// ✅ CORS ayarları
+// CORS ayarları - DÜZELTİLMİŞ
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "https://srmdb.vercel.app",
-        /^https:\/\/srmdb-.*\.vercel\.app$/,
+        "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app", // Tam URL
+        /^https:\/\/.*\.vercel\.app$/, // Regex pattern ile tüm vercel domainleri
       ];
 
+      // Origin yoksa (Postman gibi) veya izin verilen listede varsa kabul et
       if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.some((o) =>
-          o instanceof RegExp ? o.test(origin) : o === origin
-        )
-      ) {
+
+      // String eşleşmesi
+      if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
         return callback(null, true);
       }
-      return callback(new Error("CORS blocked by policy"));
+
+      // Regex eşleşmesi
+      if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS politikası tarafından engellendi"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
-// ✅ Express 5 OPTIONS preflight fix
-app.options("/*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Content-Length, X-Requested-With, Cookie"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.sendStatus(200);
-});
-
-// Middleware'ler
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// ✅ MongoDB bağlantısı
+// MongoDB Bağlantısı
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ✅ Loglama middleware
+// Loglama middleware
 app.use((req, res, next) => {
-  console.log(
-    `🌐 ${req.method} ${req.url} from ${req.get("origin") || "unknown origin"}`
-  );
+  console.log(`🌐 ${req.method} ${req.url}`);
   next();
 });
 
-// ✅ Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+// Socket.io - DÜZELTİLMİŞ
+const server = app.listen(PORT, () => {
+  console.log(`🚀 SRMDB Server running on port ${PORT}`);
 });
 
-// ✅ 404 handler (Express 5 uyumlu)
-// app.use("*", …) yerine regex ile yaz
-app.use(/.*/, (req, res) => {
-  res.status(404).json({
-    error: "Route not found",
-    path: req.originalUrl,
-    method: req.method,
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app",
+      /^https:\/\/.*\.vercel\.app$/,
+    ],
+    credentials: true,
+  },
+});
+
+io.on("connection", (socket) => {
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined socket`);
   });
 });
 
