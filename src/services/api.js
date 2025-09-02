@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://srmdb.onrender.com",
+  baseURL: "https://srmdb.onrender.com", // Render backend URL'iniz
   withCredentials: true,
   timeout: 15000,
 });
@@ -37,16 +37,11 @@ API.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (
-      error.response?.status === 401 &&
-      error.response?.data?.message === "Token gerekli"
-    ) {
+    if (error.response?.status === 401 && error.response?.data?.expired) {
       try {
-        const refreshResponse = await API.post("/api/auth/refresh");
-        console.log("Token yenilendi:", refreshResponse.data);
-        return API.request(error.config); // Yeniden dene
+        await API.post("/api/auth/refresh");
+        return API.request(error.config);
       } catch (refreshError) {
-        console.error("Token yenileme hatası:", refreshError);
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

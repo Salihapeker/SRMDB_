@@ -7,8 +7,7 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+
 // CORS ayarları - DÜZELTİLMİŞ
 app.use(
   cors({
@@ -127,16 +126,13 @@ const Archive = mongoose.model("Archive", archiveSchema);
 
 // Auth Middleware
 const authMiddleware = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: "Token gerekli" });
   }
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your-secret-key-here"
-    ); // SECRET_KEY yerine JWT_SECRET kullan
+    const decoded = jwt.verify(token, SECRET_KEY);
     const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ message: "Kullanıcı bulunamadı" });
@@ -222,6 +218,15 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ message: "Tüm alanlar gerekli" });
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Geçersiz email formatı" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Şifre en az 6 karakter olmalı" });
+    }
+
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
       return res.status(400).json({
@@ -251,11 +256,8 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     await user.save();
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET || "your-secret-key-here",
-      { expiresIn: "7d" }
-    );
+
+    const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -276,16 +278,18 @@ app.post("/api/auth/register", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Register error:", error.stack); // Stack trace ekle
+    console.error("❌ Register error:", error);
+
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({
         message: `Bu ${field === "email" ? "email" : "kullanıcı adı"} zaten kayıtlı`,
       });
     }
+
     res.status(500).json({
       message: "Sunucu hatası",
-      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
