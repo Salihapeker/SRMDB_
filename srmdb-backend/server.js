@@ -52,29 +52,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io - DÜZELTİLMİŞ
-const server = app.listen(PORT, () => {
-  console.log(`🚀 SRMDB Server running on port ${PORT}`);
-});
-
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://srmdb-m52w3ftsb-salihapekers-projects.vercel.app",
-      /^https:\/\/.*\.vercel\.app$/,
-    ],
-    credentials: true,
-  },
-});
-
-io.on("connection", (socket) => {
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined socket`);
-  });
-});
-
 // Kullanıcı Modeli
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
