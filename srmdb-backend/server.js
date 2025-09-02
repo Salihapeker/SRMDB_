@@ -12,8 +12,9 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "http://localhost:3000", // local test
-      "https://srmdb-salihapekers-projects.vercel.app", // Vercel frontend
+      "http://localhost:3000",
+      "https://srmdb-salihapekers-projects.vercel.app",
+      "https://srmdb-n8lifodkt-salihapekers-projects.vercel.app",
     ],
     credentials: true,
   })
@@ -46,6 +47,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:3000",
       "https://srmdb-salihapekers-projects.vercel.app",
+      "https://srmdb-n8lifodkt-salihapekers-projects.vercel.app",
     ],
     credentials: true,
   },
