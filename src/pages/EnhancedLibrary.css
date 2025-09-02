@@ -1,0 +1,423 @@
+/* Modernleştirme: Variables, responsive grids/stats, fluid elements, improved transitions */
+
+/* Root variables */
+:root {
+  --primary-color: #ff7eb3;
+  --secondary-color: #5b2ecc;
+  --accent-color: #4a90e2;
+  --bg-color: rgba(255, 255, 255, 0.05);
+  
+  --text-color: white;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --font-size-heading: clamp(1.2rem, 3vw, 1.5rem);
+}
+
+
+
+/* Reset ve temel stiller */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.enhanced-library-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  color: var(--text-color);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Başlık */
+.library-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.library-header h1 {
+  color: var(--primary-color);
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  margin-bottom: 10px;
+}
+
+.partner-info {
+  color: #695656;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+/* Görünüm değiştirme butonları */
+.view-toggle {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.toggle-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out, transform 0.2s;
+}
+
+.toggle-btn.active, .toggle-btn:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+.toggle-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+}
+
+/* Kütüphane bölümleri */
+.library-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.library-section h3 {
+  font-size: var(--font-size-heading);
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 5px;
+  text-align: center;
+}
+.comment-preview {
+  color: var(--text-color); /* Dinamik metin rengi */
+}
+/* Film grid'i - Responsive */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* Gelişmiş film kartı */
+.enhanced-movie-card {
+  background-color: var(--bg-card); /* Dinamik arka plan */
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.3s, background-color var(--transition-normal);
+  text-align: center;
+  color: #757575; /* Dinamik metin rengi */
+  cursor: pointer;
+}
+
+.enhanced-movie-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-poster {
+  position: relative;
+}
+
+.card-poster img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.poster-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: #eee;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* İzlenme rozetleri */
+.watch-badges {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.watch-badges .badge {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  transition: opacity 0.2s; /* Hafif fade */
+}
+
+.watched-user { background-color: var(--accent-color); }
+.watched-partner { background-color: var(--primary-color); }
+.watched-together { background-color: #e94e4e; }
+
+/* Kart bilgileri */
+.card-info h4 {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  margin: 5px 0;
+}
+
+.release-year, .imdb-rating, .partner-rating, .compatibility-score, .comment-preview {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 5px 0;
+}
+
+.rating-badge {
+  background-color: #ffcc00;
+  color: #111;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin: 5px 0;
+}
+
+/* Kart aksiyonları */
+.card-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.card-actions button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.card-actions .mark-watched-btn {
+  background-color: var(--accent-color);
+}
+
+.card-actions button:hover {
+  background-color: #c0392b;
+}
+
+.card-actions .mark-watched-btn:hover {
+  background-color: #3f6ad8;
+}
+
+/* İstatistikler - Responsive */
+.partner-stats, .shared-stats {
+  margin-bottom: 30px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Uyumluluk analizi */
+.compatibility-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.compatibility-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.compatibility-movie img {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.compatibility-movie span {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.score-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease-in-out;
+}
+
+.compatibility-score span {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Boş bölüm mesajı */
+.empty-section {
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
+  padding: 20px;
+}
+
+.empty-section p {
+  margin-bottom: 10px;
+}
+
+.cta-btn {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out, transform 0.2s;
+}
+
+.cta-btn:hover {
+  background-color: #3f1fa3;
+  transform: scale(1.05);
+}
+
+/* Hızlı aksiyonlar */
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.action-btn {
+  background-color: #ff6363;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.action-btn:hover {
+  background-color: #e94e4e;
+}
+
+.rating-badge.average-rating {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin: 5px 0;
+}
+
+.comment-preview p {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 5px 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.remove-btn, .mark-watched-btn, .btn-favorite, .btn-dislike {
+  padding: 8px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s;
+}
+
+.remove-btn {
+  background: #ff4444;
+  color: white;
+}
+
+.mark-watched-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-favorite {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-dislike {
+  background: #757575;
+  color: white;
+}
+
+.action-btn {
+  padding: 10px 15px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #4a90e2, #ff7eb3);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}

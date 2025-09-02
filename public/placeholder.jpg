@@ -1,0 +1,4 @@
+.movie-placeholder {
+  background-image: url('/path/to/default.jpg');
+  background-size: cover;
+}

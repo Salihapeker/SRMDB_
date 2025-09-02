@@ -1,0 +1,106 @@
+/* src/App.css */
+.app-container {
+  font-family: 'Segoe UI', sans-serif;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #000; /* Koyu arka plan, LightRays efektini öne çıkarır */
+  overflow: auto; /* İçerik taşarsa kaydırma çubuğu ekler */
+}
+
+/* Logo stilleri */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+/* Başlık (header) stilleri */
+header {
+  background-color: #1f1c2c; /* Mevcut koyu renk tonu */
+  color: white;
+  padding: 20px;
+  border-bottom: 3px solid #5b2ecc;
+  position: relative;
+  z-index: 10; /* LightRays'ın üstünde görünmesi için */
+}
+
+.header-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto; /* Ortalanmış içerik */
+}
+
+.header-menu h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+nav ul li {
+  display: inline;
+  margin-left: 20px;
+}
+
+nav ul li a {
+  color: #5b2ecc;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: #3f1fa3;
+}
+
+/* Genel içerik stilleri */
+.App {
+  text-align: center;
+  position: relative;
+  z-index: 10; /* İçeriğin LightRays'ın üstünde kalmasını sağlar */
+  color: white; /* Işık huzmeleriyle kontrast için açık renk */
+}
+
+/* Bağlantı stilleri */
+.App-link {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+.App-link:hover {
+  text-decoration: underline;
+}
+
+/* Logo animasyonu */
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* LightRays kapsayıcı için ek stil (isteğe bağlı, çakışmayı önlemek için) */
+.light-rays-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; /* LightRays arka planda kalır */
+  pointer-events: none; /* Fare etkileşimlerini engellemez */
+  overflow: hidden;
+}
