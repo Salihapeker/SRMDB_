@@ -8,23 +8,15 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Dinamik CORS yapılandırması
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://srmdb-salihapekers-projects.vercel.app",
-  /\.salihapekers-projects\.vercel\.app$/,
-];
-
+// CORS ayarları
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.some((allowed) => {
-          if (allowed instanceof RegExp) return allowed.test(origin);
-          return allowed === origin;
-        })
-      ) {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "*.salihapekers-projects.vercel.app", // Tüm vercel alt domainlerini kapsar
+      ];
+      if (!origin || allowedOrigins.some((o) => origin.endsWith(o))) {
         return callback(null, true);
       }
       return callback(new Error("CORS politikası tarafından engellendi"));
@@ -55,13 +47,11 @@ const server = app.listen(PORT, () => {
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.some((allowed) => {
-          if (allowed instanceof RegExp) return allowed.test(origin);
-          return allowed === origin;
-        })
-      ) {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "*.salihapekers-projects.vercel.app",
+      ];
+      if (!origin || allowedOrigins.some((o) => origin.endsWith(o))) {
         return callback(null, true);
       }
       return callback(new Error("CORS politikası tarafından engellendi"));
@@ -69,6 +59,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
 io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     socket.join(userId);
