@@ -27,33 +27,30 @@ app.use(
       const allowedOrigins = [
         "http://localhost:3000",
         "https://srmdb.vercel.app",
-        "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app",
         /^https:\/\/srmdb-.*\.vercel\.app$/,
-        /^https:\/\/.*-salihapekers-projects\.vercel\.app$/,
       ];
 
       if (!origin) return callback(null, true);
-
-      if (allowedOrigins.some((o) => typeof o === "string" && o === origin)) {
+      if (
+        allowedOrigins.some((o) =>
+          o instanceof RegExp ? o.test(origin) : o === origin
+        )
+      ) {
         return callback(null, true);
       }
-
-      if (allowedOrigins.some((o) => o instanceof RegExp && o.test(origin))) {
-        return callback(null, true);
-      }
-
-      console.log("❌ CORS blocked origin:", origin);
-      return callback(new Error("CORS politikası tarafından engellendi"));
+      return callback(new Error("CORS blocked by policy"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    preflightContinue: false, // 👈 OPTIONS otomatik handle edilir
   })
 );
 
 // Preflight OPTIONS requests için özel handler
-app.options("*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
+// Tüm OPTIONS isteklerini yakala
+app.options(/.*/, (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
