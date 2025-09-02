@@ -52,6 +52,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Kullanıcı Modeli
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   name: { type: String, required: true },
@@ -76,7 +77,6 @@ const userSchema = new mongoose.Schema({
         default: "partner_request",
       },
       message: { type: String },
-      // Burayı değiştirin - 'read' değerini ekleyin
       status: {
         type: String,
         enum: ["pending", "accepted", "rejected", "read"],
@@ -87,7 +87,8 @@ const userSchema = new mongoose.Schema({
     },
   ],
 });
-// Yorum Modeli
+
+// Diğer modeller
 const reviewSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   movieId: { type: String, required: true },
@@ -98,7 +99,6 @@ const reviewSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// Ortak Kütüphane Modeli
 const sharedLibrarySchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   favorites: [{ type: Object }],
@@ -112,19 +112,19 @@ const sharedLibrarySchema = new mongoose.Schema({
   ],
 });
 
-// Arşiv Modeli (Eski ortak kütüphane verileri için)
 const archiveSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   sharedLibrary: { type: Object },
   archivedAt: { type: Date, default: Date.now },
 });
 
+// Model tanımlamaları
 const User = mongoose.model("User", userSchema);
 const Review = mongoose.model("Review", reviewSchema);
 const SharedLibrary = mongoose.model("SharedLibrary", sharedLibrarySchema);
 const Archive = mongoose.model("Archive", archiveSchema);
 
-// 🔐 Auth Middleware
+// Auth Middleware
 const authMiddleware = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -145,12 +145,70 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-// 🏠 Root endpoint
-app.get("/", (req, res) => {
-  res.json({ message: "SRMDB API çalışıyor!" });
+// HTTP Server oluştur
+const server = require("http").createServer(app);
+
+// Socket.IO setup
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "https://srmdb.vercel.app",
+      "https://srmdb-6u2dqz42k-salihapekers-projects.vercel.app",
+      /^https:\/\/srmdb-.*\.vercel\.app$/,
+      /^https:\/\/.*-salihapekers-projects\.vercel\.app$/,
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
-// 📝 REGISTER
+io.on("connection", (socket) => {
+  console.log("🔌 User connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined socket room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔌 User disconnected:", socket.id);
+  });
+});
+
+// Routes
+
+// Root endpoint
+app.get("/", (req, res) => {
+  res.json({
+    message: "SRMDB API çalışıyor!",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// API Health check
+app.get("/api/health", async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    const statuses = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+
+    res.json({
+      status: "OK",
+      database: statuses[dbStatus],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// REGISTER
 app.post("/api/auth/register", async (req, res) => {
   const { username, name, email, password, profilePicture } = req.body;
   console.log("📝 Register attempt:", { username, email });
@@ -158,6 +216,15 @@ app.post("/api/auth/register", async (req, res) => {
   try {
     if (!username || !name || !email || !password) {
       return res.status(400).json({ message: "Tüm alanlar gerekli" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Geçersiz email formatı" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Şifre en az 6 karakter olmalı" });
     }
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -193,11 +260,12 @@ app.post("/api/auth/register", async (req, res) => {
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ User registered successfully:", username);
     res.status(201).json({
       message: "Kayıt başarılı",
       user: {
@@ -211,11 +279,22 @@ app.post("/api/auth/register", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Register error:", error);
-    res.status(500).json({ message: "Sunucu hatası" });
+
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        message: `Bu ${field === "email" ? "email" : "kullanıcı adı"} zaten kayıtlı`,
+      });
+    }
+
+    res.status(500).json({
+      message: "Sunucu hatası",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 
-// 🔑 LOGIN
+// LOGIN
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   console.log("🔑 Login attempt:", { email });
@@ -240,11 +319,12 @@ app.post("/api/auth/login", async (req, res) => {
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ Login successful:", user.username);
     res.json({
       message: "Giriş başarılı",
       user: {
@@ -258,13 +338,16 @@ app.post("/api/auth/login", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Login error:", error);
-    res.status(500).json({ message: "Sunucu hatası" });
+    res.status(500).json({
+      message: "Sunucu hatası",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 
-// 🔄 REFRESH TOKEN
-app.post("/auth/refresh", async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+// REFRESH TOKEN
+app.post("/api/auth/refresh", async (req, res) => {
+  const refreshToken = req.cookies.refreshToken || req.cookies.token;
   if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token gerekli" });
   }
@@ -277,13 +360,13 @@ app.post("/auth/refresh", async (req, res) => {
     }
 
     const newToken = jwt.sign({ id: user._id }, SECRET_KEY, {
-      expiresIn: "15m",
+      expiresIn: "7d",
     });
     res.cookie("token", newToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ message: "Token yenilendi" });
@@ -295,17 +378,17 @@ app.post("/auth/refresh", async (req, res) => {
   }
 });
 
-// 🚪 LOGOUT
+// LOGOUT
 app.post("/api/auth/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(200).json({ message: "Çıkış yapıldı" });
 });
 
-// Kullanıcı bilgisi
+// User info
 app.get("/api/auth/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
@@ -335,7 +418,7 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
   }
 });
 
-// 📚 LIBRARY
+// LIBRARY endpoints
 app.get("/api/library", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("library");
@@ -353,21 +436,21 @@ app.get("/api/library", authMiddleware, async (req, res) => {
   }
 });
 
-// ➕ LIBRARY ADD
+// Library ADD
 app.post("/api/library/:category", authMiddleware, async (req, res) => {
   const { category } = req.params;
   let movieData = req.body.movieData || req.body.item;
 
-  if (
-    ![
-      "favorites",
-      "watchlist",
-      "disliked",
-      "watched",
-      "liked",
-      "watchedTogether",
-    ].includes(category)
-  ) {
+  const validCategories = [
+    "favorites",
+    "watchlist",
+    "disliked",
+    "watched",
+    "liked",
+    "watchedTogether",
+  ];
+
+  if (!validCategories.includes(category)) {
     console.error(`❌ Invalid category: ${category}`);
     return res.status(400).json({ message: "Geçersiz kategori" });
   }
@@ -390,6 +473,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
+    // Business logic validations
     if (
       category === "favorites" &&
       user.library.disliked.some((i) => i.id === movieData.id)
@@ -398,6 +482,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Bu içerik beğenilmeyenlerde, favorilere eklenemez.",
       });
     }
+
     if (
       category === "disliked" &&
       user.library.favorites.some((i) => i.id === movieData.id)
@@ -406,6 +491,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Bu içerik favorilerde, beğenilmeyenlere eklenemez.",
       });
     }
+
     if (
       (category === "favorites" || category === "disliked") &&
       !user.library.watched.some((i) => i.id === movieData.id)
@@ -414,6 +500,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         message: "Sadece izlenen içerikler favori veya beğenilmeyen olabilir.",
       });
     }
+
     if (
       category === "watchlist" &&
       user.library.watched.some((i) => i.id === movieData.id)
@@ -422,6 +509,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
         .status(400)
         .json({ message: "Bu içerik izlenmiş, izleneceklere eklenemez." });
     }
+
     if (category === "watchedTogether" && !user.partner) {
       return res
         .status(400)
@@ -433,6 +521,8 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     }
 
     user.library[category].push(movieData);
+
+    // Handle shared library for watchedTogether
     if (category === "watchedTogether" && user.partner) {
       const sharedLibrary = await SharedLibrary.findOne({
         users: { $all: [user._id, user.partner] },
@@ -440,7 +530,7 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
       if (sharedLibrary) {
         sharedLibrary.watched.push(movieData);
         await sharedLibrary.save();
-        io.to(user.partner).emit("libraryUpdate");
+        io.to(user.partner.toString()).emit("libraryUpdate");
       }
     }
 
@@ -452,8 +542,9 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     });
 
     await user.save();
-    io.to(user._id).emit("libraryUpdate");
-    io.to(user._id).emit("notificationUpdate");
+    io.to(user._id.toString()).emit("libraryUpdate");
+    io.to(user._id.toString()).emit("notificationUpdate");
+
     console.log(`✅ ${category}'e eklendi:`, movieData.title || movieData.name);
     res.json({ message: "Başarıyla eklendi", library: user.library });
   } catch (error) {
@@ -462,20 +553,20 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
   }
 });
 
-// 🗑️ LIBRARY DELETE
+// Library DELETE
 app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
   const { category, id } = req.params;
 
-  if (
-    ![
-      "favorites",
-      "watchlist",
-      "disliked",
-      "watched",
-      "liked",
-      "watchedTogether",
-    ].includes(category)
-  ) {
+  const validCategories = [
+    "favorites",
+    "watchlist",
+    "disliked",
+    "watched",
+    "liked",
+    "watchedTogether",
+  ];
+
+  if (!validCategories.includes(category)) {
     console.error(`❌ Invalid category: ${category}`);
     return res.status(400).json({ message: "Geçersiz kategori" });
   }
@@ -490,6 +581,7 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
     const beforeCount = user.library[category].length;
 
     if (category === "watched" || category === "watchedTogether") {
+      // Remove from all related categories when removing from watched
       user.library.watched = user.library.watched.filter(
         (item) => item.id.toString() !== id
       );
@@ -505,6 +597,7 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
       user.library.liked = user.library.liked.filter(
         (item) => item.id.toString() !== id
       );
+
       if (user.partner) {
         const sharedLibrary = await SharedLibrary.findOne({
           users: { $all: [user._id, user.partner] },
@@ -517,9 +610,10 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
             (item) => item.id.toString() !== id
           );
           await sharedLibrary.save();
-          io.to(user.partner).emit("libraryUpdate");
+          io.to(user.partner.toString()).emit("libraryUpdate");
         }
       }
+
       user.notifications.push({
         type: "library_update",
         message: `İçerik ID ${id} izlenenlerden kaldırıldı`,
@@ -539,8 +633,8 @@ app.delete("/api/library/:category/:id", authMiddleware, async (req, res) => {
     }
 
     await user.save();
-    io.to(user._id).emit("libraryUpdate");
-    io.to(user._id).emit("notificationUpdate");
+    io.to(user._id.toString()).emit("libraryUpdate");
+    io.to(user._id.toString()).emit("notificationUpdate");
 
     const afterCount = user.library[category].length;
     if (beforeCount === afterCount) {
