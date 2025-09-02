@@ -8,14 +8,29 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Dinamik CORS yapılandırması
+const allowedOrigins = [
+  "http://localhost:3000", // local test
+  "https://srmdb-salihapekers-projects.vercel.app", // sabit URL varsa
+  /\.salihapekers-projects\.vercel\.app$/, // Tüm vercel alt domainlerini kapsar
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://srmdb-salihapekers-projects.vercel.app",
-      "https://srmdb-n8lifodkt-salihapekers-projects.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      // Origin yoksa (örneğin server-to-server istekler) izin ver
+      if (!origin) return callback(null, true);
+      // İzin verilen origin'lerden biriyle eşleşiyorsa izin ver
+      if (
+        allowedOrigins.some((allowed) => {
+          if (allowed instanceof RegExp) return allowed.test(origin);
+          return allowed === origin;
+        })
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS politikası tarafından engellendi"));
+    },
     credentials: true,
   })
 );
@@ -25,10 +40,7 @@ app.use(cookieParser());
 
 // MongoDB Bağlantısı
 mongoose
-  .connect(
-    process.env.MONGO_URI ||
-      "mongodb+srv://Salihapeker:srmdbdatabase@cluster0.ijoxsj9.mongodb.net/srmdb?retryWrites=true&w=majority"
-  )
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
@@ -44,11 +56,18 @@ const server = app.listen(PORT, () => {
 });
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://srmdb-salihapekers-projects.vercel.app",
-      "https://srmdb-n8lifodkt-salihapekers-projects.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.some((allowed) => {
+          if (allowed instanceof RegExp) return allowed.test(origin);
+          return allowed === origin;
+        })
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS politikası tarafından engellendi"));
+    },
     credentials: true,
   },
 });
@@ -59,7 +78,6 @@ io.on("connection", (socket) => {
     console.log(`User ${userId} joined socket`);
   });
 });
-
 // Kullanıcı Modeli
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
