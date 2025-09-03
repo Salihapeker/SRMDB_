@@ -20,6 +20,13 @@ if (!process.env.JWT_SECRET) {
 if (!TMDB_API_KEY) {
   console.error("❌ TMDB_API_KEY environment variable is required");
 }
+// Statik dosyaları servis et
+app.use(express.static("public")); // "public" klasöründe manifest.json olmalı
+
+// Manifest için özel rota (isteğe bağlı)
+app.get("/manifest.json", (req, res) => {
+  res.sendFile(__dirname + "/public/manifest.json");
+});
 
 console.log("🌐 Environment:", process.env.NODE_ENV || "development");
 console.log("📋 Health check: http://localhost:" + PORT + "/api/health");

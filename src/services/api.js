@@ -2,26 +2,17 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: "https://srmdb.onrender.com",
-  withCredentials: true,
+  withCredentials: true, // Cookie'leri gönder
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor - Token'ı header'a ekle
+// Request interceptor
 API.interceptors.request.use(
   (config) => {
     console.log(`🌐 ${config.method?.toUpperCase()} ${config.url}`);
-
-    // LocalStorage'dan token al ve header'a ekle
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log("🔑 Token added to request");
-    } else {
-      console.log("⚠️ No token found in localStorage");
-    }
 
     // Endpoint bazlı timeout ayarları
     if (config.url?.includes("/api/library/")) {
@@ -47,35 +38,32 @@ API.interceptors.request.use(
 // Response interceptor
 API.interceptors.response.use(
   (response) => {
-    // Login/Register'da token'ı kaydet
-    if (response.data?.token) {
+    // Login/Register'da token'ı localStorage'a kaydet (opsiyonel)
+    if (
+      response.config.url.includes("/api/auth/login") &&
+      response.data?.token
+    ) {
       console.log("💾 Token saved to localStorage");
       localStorage.setItem("token", response.data.token);
-
-      // User data'yı da kaydet
       if (response.data.user) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
       }
     }
 
-    // Success response log
     console.log(
       `✅ ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`
     );
-
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
 
-    // Timeout error handling
     if (error.code === "ECONNABORTED") {
       console.error("⏱️ Request timeout:", error.config?.url);
       error.message = "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.";
       return Promise.reject(error);
     }
 
-    // Network error handling
     if (error.code === "ERR_NETWORK") {
       console.error("🌐 Network error:", error.message);
       error.message =
@@ -91,35 +79,23 @@ API.interceptors.response.use(
       error.response?.data
     );
 
-    // 401 Unauthorized handling
     if (status === 401) {
       console.log("🔒 401 Unauthorized - Clearing auth data");
-
-      // Auth data'yı temizle
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // Refresh token denemesi (eğer varsa)
       if (error.response?.data?.expired && !originalRequest._retry) {
         originalRequest._retry = true;
-
         try {
           console.log("🔄 Attempting token refresh...");
           const refreshResponse = await API.post("/api/auth/refresh");
-
-          if (refreshResponse.data?.token) {
-            localStorage.setItem("token", refreshResponse.data.token);
-            originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
-
-            console.log("✅ Token refreshed, retrying request");
-            return API.request(originalRequest);
-          }
+          console.log("✅ Token refreshed, retrying request");
+          return API.request(originalRequest);
         } catch (refreshError) {
           console.error("❌ Token refresh failed:", refreshError);
         }
       }
 
-      // Login sayfasına yönlendir (sadece auth sayfalarında değilsek)
       if (
         window.location.pathname !== "/login" &&
         window.location.pathname !== "/register" &&
@@ -130,29 +106,16 @@ API.interceptors.response.use(
       }
     }
 
-    // 403 Forbidden
     if (status === 403) {
-      console.error("🚫 Access forbidden");
       error.message = "Bu işlem için yetkiniz bulunmuyor.";
     }
-
-    // 404 Not Found
     if (status === 404) {
-      console.error("🔍 Resource not found");
-      if (!error.response?.data?.message) {
-        error.message = "İstenen kaynak bulunamadı.";
-      }
+      error.message = "İstenen kaynak bulunamadı.";
     }
-
-    // 500 Server Error
     if (status >= 500) {
-      console.error("🚨 Server error");
       error.message = "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.";
     }
-
-    // 429 Too Many Requests
     if (status === 429) {
-      console.error("⏰ Rate limit exceeded");
       error.message =
         "Çok fazla istek gönderildi. Lütfen bekleyip tekrar deneyin.";
     }
@@ -161,7 +124,6 @@ API.interceptors.response.use(
   }
 );
 
-// API health check function
 export const checkAPIHealth = async () => {
   try {
     const response = await axios.get("https://srmdb.onrender.com/api/health", {
@@ -175,16 +137,13 @@ export const checkAPIHealth = async () => {
   }
 };
 
-// Auth helper functions
 export const authHelpers = {
   isAuthenticated: () => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     return !!(token && user);
   },
-
   getToken: () => localStorage.getItem("token"),
-
   getUser: () => {
     try {
       const user = localStorage.getItem("user");
@@ -193,7 +152,6 @@ export const authHelpers = {
       return null;
     }
   },
-
   clearAuth: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

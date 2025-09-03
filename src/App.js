@@ -124,30 +124,13 @@ function AppContent() {
     },
     []
   );
-
   const checkUserSession = useCallback(async () => {
     try {
       console.log("🔐 User session kontrol ediliyor...");
+      const response = await API.get("/api/auth/me");
+      if (!response.data?.user) throw new Error("User data not found");
 
-      // Token kontrolü
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("❌ Token bulunamadı");
-        setUser(null);
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      // Kullanıcı bilgilerini al
-      const userResponse = await API.get("/api/auth/me");
-
-      if (!userResponse.data?.user) {
-        throw new Error("User data not found");
-      }
-
-      // Partner name fix - ID yerine isim göster
-      let userData = userResponse.data.user;
+      let userData = response.data.user;
       if (userData.partner && typeof userData.partner === "object") {
         userData.partner = {
           id: userData.partner._id || userData.partner.id,
@@ -166,42 +149,25 @@ function AppContent() {
         userData.partner?.name
       );
 
-      // Library items yükle
-      try {
-        console.log("📚 Library items yükleniyor...");
-        const libraryResponse = await API.get("/api/library");
-        const libraryData = libraryResponse.data || {
+      const libraryResponse = await API.get("/api/library");
+      setLibraryItems(
+        libraryResponse.data || {
           watched: [],
           watchlist: [],
           favorites: [],
           disliked: [],
-        };
-
-        setLibraryItems(libraryData);
-        console.log("✅ Library loaded successfully");
-      } catch (libraryError) {
-        console.warn("⚠️ Library yüklenemedi:", libraryError.message);
-        // Library yüklenemese bile kullanıcı oturumunu devam ettir
-        setLibraryItems({
-          watched: [],
-          watchlist: [],
-          favorites: [],
-          disliked: [],
-        });
-      }
+        }
+      );
+      console.log("✅ Library loaded successfully");
     } catch (error) {
       console.log(
         "❌ Session check failed:",
         error.response?.status,
         error.message
       );
-
-      // Token geçersizse temizle
       if (error.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        authHelpers.clearAuth();
       }
-
       setUser(null);
       setIsAuthenticated(false);
       setLibraryItems({
@@ -218,7 +184,6 @@ function AppContent() {
   useEffect(() => {
     checkUserSession();
   }, [checkUserSession]);
-
   const addToLibrary = useCallback(
     async (category, item) => {
       if (!item || !item.id) {
