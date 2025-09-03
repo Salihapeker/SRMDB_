@@ -7,7 +7,6 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.JWT_SECRET || "fallback-secret-key";
@@ -20,31 +19,22 @@ if (!process.env.JWT_SECRET) {
 
 if (!TMDB_API_KEY) {
   console.error("❌ TMDB_API_KEY environment variable is required");
-  process.exit(1);
 }
 
 console.log("🌐 Environment:", process.env.NODE_ENV || "development");
 console.log("📋 Health check: http://localhost:" + PORT + "/api/health");
-
-// CORS ayarları - DÜZELTILMIŞ VE GELİŞTIRILMIŞ
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001", // Development alternatives
-  "https://srmdb.vercel.app", // Sabit production URL
-  "https://srmdb-git-main-salihapekers-projects.vercel.app", // Git branch URL
-  // Geçici Vercel URL'leri için regex patterns
-  /^https:\/\/srmdb-.*\.vercel\.app$/,
-  /^https:\/\/srmdb-.*-salihapekers-projects\.vercel\.app$/,
-];
-
+// CORS ayarları - DÜZELTİLMİŞ
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Same-origin requests (mobile apps, Postman, etc.)
-      if (!origin) {
-        console.log("✅ Same-origin request allowed");
-        return callback(null, true);
-      }
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "https://srmdb.vercel.app", // YENİ SABİT URL
+        "https://srmdb-k8qxhmil5-salihapekers-projects.vercel.app",
+        /^https:\/\/srmdb-.*-salihapekers-projects\.vercel\.app$/, // Geçici URL'ler için
+      ];
+
+      if (!origin) return callback(null, true);
 
       const isAllowed = allowedOrigins.some((pattern) => {
         if (typeof pattern === "string") {
@@ -57,161 +47,30 @@ app.use(
       });
 
       if (isAllowed) {
-        console.log("✅ CORS allowed origin:", origin);
         return callback(null, true);
       }
 
       console.log("❌ CORS blocked origin:", origin);
-      return callback(new Error("CORS policy violation"));
+      return callback(new Error("CORS politikası tarafından engellendi"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: [
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-      "Cache-Control",
-      "X-Access-Token",
-    ],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   })
 );
 
-// Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-// Request logging middleware
+// MongoDB Bağlantısı
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+// Loglama middleware
 app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`🌐 ${req.method} ${req.url} - ${timestamp}`);
-
-  // Auth header logging (without exposing the token)
-  if (req.headers.authorization) {
-    console.log("🔑 Authorization header present");
-  } else {
-    console.log("⚠️ No authorization header");
-  }
-
+  console.log(`🌐 ${req.method} ${req.url}`);
   next();
 });
-
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
-    version: "1.0.0",
-  });
-});
-
-// Root endpoint
-app.get("/", (req, res) => {
-  res.json({
-    message: "🎬 SRMDB API Server",
-    status: "Running",
-    endpoints: {
-      health: "/api/health",
-      auth: "/api/auth/*",
-      library: "/api/library/*",
-      movies: "/api/movies/*",
-    },
-  });
-});
-
-// MongoDB Bağlantısı
-const connectMongoDB = async () => {
-  try {
-    const mongoURI = process.env.MONGO_URI;
-
-    if (!mongoURI) {
-      throw new Error("MONGO_URI environment variable is required");
-    }
-
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
-
-    console.log("✅ MongoDB connected successfully");
-
-    // Database connection event listeners
-    mongoose.connection.on("error", (err) => {
-      console.error("❌ MongoDB connection error:", err);
-    });
-
-    mongoose.connection.on("disconnected", () => {
-      console.warn("⚠️ MongoDB disconnected");
-    });
-
-    mongoose.connection.on("reconnected", () => {
-      console.log("✅ MongoDB reconnected");
-    });
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  }
-};
-
-// JWT Token verification middleware
-const authenticateToken = (req, res, next) => {
-  try {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
-
-    if (!token) {
-      console.log("🔒 No token provided");
-      return res.status(401).json({
-        message: "Access token required",
-        code: "NO_TOKEN",
-      });
-    }
-
-    jwt.verify(token, SECRET_KEY, (err, user) => {
-      if (err) {
-        console.log("🔒 Token verification failed:", err.message);
-
-        if (err.name === "TokenExpiredError") {
-          return res.status(401).json({
-            message: "Token expired",
-            code: "TOKEN_EXPIRED",
-            expired: true,
-          });
-        }
-
-        if (err.name === "JsonWebTokenError") {
-          return res.status(403).json({
-            message: "Invalid token",
-            code: "INVALID_TOKEN",
-          });
-        }
-
-        return res.status(403).json({
-          message: "Token verification failed",
-          code: "VERIFICATION_FAILED",
-        });
-      }
-
-      req.user = user;
-      console.log("✅ Token verified for user:", user.userId);
-      next();
-    });
-  } catch (error) {
-    console.error("❌ Auth middleware error:", error);
-    return res.status(500).json({
-      message: "Authentication error",
-      code: "AUTH_ERROR",
-    });
-  }
-};
 
 // Kullanıcı Modeli
 const userSchema = new mongoose.Schema({
