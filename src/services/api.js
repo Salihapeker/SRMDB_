@@ -1,17 +1,23 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://srmdb.onrender.com", // Render backend URL'iniz
+  baseURL: "https://srmdb.onrender.com",
   withCredentials: true,
   timeout: 15000,
 });
 
-// Request interceptor
+// Request interceptor - Token'ı header'a ekle
 API.interceptors.request.use(
   (config) => {
     console.log(`🌐 ${config.method?.toUpperCase()} ${config.url}`);
 
-    // Specific timeouts for different endpoints
+    // LocalStorage'dan token al ve header'a ekle
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Timeout ayarları...
     if (config.url?.includes("/api/library/")) {
       config.timeout = 20000;
     } else if (config.url?.includes("/api/watched/")) {
@@ -29,7 +35,13 @@ API.interceptors.request.use(
 
 // Response interceptor
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Login/Register'da token'ı kaydet
+    if (response.data?.token) {
+      localStorage.setItem("token", response.data.token);
+    }
+    return response;
+  },
   async (error) => {
     if (error.code === "ECONNABORTED") {
       console.error("Request timeout:", error.config?.url);
@@ -37,11 +49,23 @@ API.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // 401 hatası - token geçersiz
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/register"
+      ) {
+        window.location.href = "/login";
+      }
+    }
+
     if (error.response?.status === 401 && error.response?.data?.expired) {
       try {
         await API.post("/api/auth/refresh");
         return API.request(error.config);
       } catch (refreshError) {
+        localStorage.removeItem("token");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

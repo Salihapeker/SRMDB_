@@ -1,16 +1,19 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API from '../services/api';
-import './ProfileMenu.css';
+import React, { useState, useRef, useEffect, useCallback, memo } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
+import "./ProfileMenu.css";
 
 // Dark Mode Hook - useTheme yerine basit hook
 const useDarkMode = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
@@ -27,7 +30,7 @@ function ProfileMenu({ user, setUser }) {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const handleToggle = useCallback(() => {
-    setIsOpen(prev => !prev);
+    setIsOpen((prev) => !prev);
   }, []);
 
   const handleClickOutside = useCallback((e) => {
@@ -37,29 +40,43 @@ function ProfileMenu({ user, setUser }) {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    console.log('Kullanici cikis yapiyor...');
+    console.log("Kullanici cikis yapiyor...");
     try {
-      await API.post('/api/auth/logout');
-      console.log('Logout successful');
+      await API.post("/api/auth/logout");
+      console.log("Logout successful");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      if (setUser && typeof setUser === 'function') {
+      // Token temizlensin
+      localStorage.removeItem("token");
+
+      if (setUser && typeof setUser === "function") {
         setUser(null);
       }
-      navigate('/login', { replace: true });
+      if (setLibraryItems && typeof setLibraryItems === "function") {
+        setLibraryItems({
+          watched: [],
+          watchlist: [],
+          favorites: [],
+          disliked: [],
+        });
+      }
+      navigate("/login", { replace: true });
     }
-  }, [setUser, navigate]);
+  }, [setUser, setLibraryItems, navigate]);
 
-  const navigateToPage = useCallback((path) => {
-    setIsOpen(false);
-    navigate(path);
-  }, [navigate]);
+  const navigateToPage = useCallback(
+    (path) => {
+      setIsOpen(false);
+      navigate(path);
+    },
+    [navigate]
+  );
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [handleClickOutside]);
 
@@ -84,10 +101,8 @@ function ProfileMenu({ user, setUser }) {
         ) : (
           <span className="profile-placeholder">👤</span>
         )}
-        <span className="profile-name">
-          {user.name || 'Profil'}
-        </span>
-        <span className="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
+        <span className="profile-name">{user.name || "Profil"}</span>
+        <span className="dropdown-arrow">{isOpen ? "▲" : "▼"}</span>
       </button>
 
       {isOpen && (
@@ -105,30 +120,33 @@ function ProfileMenu({ user, setUser }) {
             <h4>{user.name}</h4>
             <p>@{user.username}</p>
             {user.partner && (
-              <p>Partner: {user.partner.name || user.partner.username || user.partner}</p>
+              <p>
+                Partner:{" "}
+                {user.partner.name || user.partner.username || user.partner}
+              </p>
             )}
           </div>
 
-          <MenuButton onClick={() => navigateToPage('/dashboard')}>
+          <MenuButton onClick={() => navigateToPage("/dashboard")}>
             🏠 Dashboard
           </MenuButton>
-          <MenuButton onClick={() => navigateToPage('/library')}>
+          <MenuButton onClick={() => navigateToPage("/library")}>
             📚 Kütüphane
           </MenuButton>
-          <MenuButton onClick={() => navigateToPage('/notifications')}>
+          <MenuButton onClick={() => navigateToPage("/notifications")}>
             🔔 Bildirimler
           </MenuButton>
-          <MenuButton onClick={() => navigateToPage('/recommendations')}>
+          <MenuButton onClick={() => navigateToPage("/recommendations")}>
             🤖 AI Önerileri
           </MenuButton>
-          <MenuButton onClick={() => navigateToPage('/settings')}>
+          <MenuButton onClick={() => navigateToPage("/settings")}>
             ⚙️ Ayarlar
           </MenuButton>
 
           <hr className="menu-divider" />
 
           <MenuButton onClick={toggleDarkMode}>
-            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            {isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
           </MenuButton>
 
           <hr className="menu-divider" />
@@ -149,6 +167,6 @@ const MenuButton = memo(({ onClick, children }) => (
   </button>
 ));
 
-MenuButton.displayName = 'MenuButton';
+MenuButton.displayName = "MenuButton";
 
 export default memo(ProfileMenu);

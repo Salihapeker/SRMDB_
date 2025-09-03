@@ -1,5 +1,16 @@
-import { useEffect, useState, useCallback, createContext, useContext } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  createContext,
+  useContext,
+} from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -14,8 +25,8 @@ import AIRecommendations from "./pages/AIRecommendations";
 import MovieDetail from "./pages/MovieDetail";
 import EnhancedLibrary from "./pages/EnhancedLibrary";
 import Notifications from "./pages/Notifications";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Theme Context
 const ThemeContext = createContext();
@@ -23,15 +34,17 @@ const ThemeContext = createContext();
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 };
 
 const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const saved = localStorage.getItem("theme");
+    return saved
+      ? saved === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
   const [isMobile, setIsMobile] = useState(false);
@@ -42,17 +55,23 @@ const ThemeProvider = ({ children }) => {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
+    window.addEventListener("resize", checkMobile);
+
     return () => {
-      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener("resize", checkMobile);
     };
   }, []);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-mobile', isMobile ? 'true' : 'false');
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
+    document.documentElement.setAttribute(
+      "data-mobile",
+      isMobile ? "true" : "false"
+    );
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode, isMobile]);
 
   const toggleDarkMode = () => {
@@ -60,12 +79,14 @@ const ThemeProvider = ({ children }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ 
-      isDarkMode, 
-      toggleDarkMode, 
-      isMobile,
-      theme: isDarkMode ? 'dark' : 'light'
-    }}>
+    <ThemeContext.Provider
+      value={{
+        isDarkMode,
+        toggleDarkMode,
+        isMobile,
+        theme: isDarkMode ? "dark" : "light",
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -87,49 +108,78 @@ function AppContent() {
   }, []);
 
   // System notification helper
-  const createSystemNotification = useCallback(async (type, message, relatedItem = null) => {
-    try {
-      await API.post('/api/notifications/system', {
-        type,
-        message,
-        relatedItem
-      });
-    } catch (error) {
-      console.error('System notification error:', error);
-    }
-  }, []);
+  const createSystemNotification = useCallback(
+    async (type, message, relatedItem = null) => {
+      try {
+        await API.post("/api/notifications/system", {
+          type,
+          message,
+          relatedItem,
+        });
+      } catch (error) {
+        console.error("System notification error:", error);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const checkUserSession = async () => {
-      try {
-        console.log('User session kontrol ediliyor...');
-        const userResponse = await API.get('/api/auth/me');
-        
-        // Partner name fix - ID yerine isim göster
-        let userData = userResponse.data.user;
-        if (userData.partner && typeof userData.partner === 'object') {
-          userData.partner = {
-            id: userData.partner._id || userData.partner.id,
-            name: userData.partner.name,
-            username: userData.partner.username,
-            profilePicture: userData.partner.profilePicture
-          };
-        }
-        
-        setUser(userData);
-        console.log('User loaded:', userData.email, 'Partner:', userData.partner?.name);
+      console.log("User session kontrol ediliyor...");
 
-        console.log('Library items yukleniyor...');
-        const libraryResponse = await API.get('/api/library');
-        setLibraryItems(libraryResponse.data || {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        setUser(null);
+        setLibraryItems({
           watched: [],
           watchlist: [],
           favorites: [],
           disliked: [],
         });
-        console.log('Library loaded:', JSON.stringify(libraryResponse.data, null, 2));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const userResponse = await API.get("/api/auth/me");
+
+        // Partner bilgilerini düzelt
+        let userData = userResponse.data.user;
+        if (userData.partner && typeof userData.partner === "object") {
+          userData.partner = {
+            id: userData.partner._id || userData.partner.id,
+            name: userData.partner.name,
+            username: userData.partner.username,
+            profilePicture: userData.partner.profilePicture,
+          };
+        }
+
+        setUser(userData);
+        console.log(
+          "User loaded:",
+          userData.email,
+          "Partner:",
+          userData.partner?.name
+        );
+
+        console.log("Library items yukleniyor...");
+        const libraryResponse = await API.get("/api/library");
+        setLibraryItems(
+          libraryResponse.data || {
+            watched: [],
+            watchlist: [],
+            favorites: [],
+            disliked: [],
+          }
+        );
+        console.log(
+          "Library loaded:",
+          JSON.stringify(libraryResponse.data, null, 2)
+        );
       } catch (error) {
-        console.log('No user session or library:', error.response?.status);
+        console.log("No user session or library:", error.response?.status);
+        localStorage.removeItem("token"); // ❗ geçersiz token temizle
         setUser(null);
         setLibraryItems({
           watched: [],
@@ -143,95 +193,111 @@ function AppContent() {
     };
 
     checkUserSession();
-  }, []);
+  }, [setUser, setLibraryItems, setLoading]);
 
-  const addToLibrary = useCallback(async (category, item) => {
-    if (!item || !item.id) {
-      console.error('Invalid item:', item);
-      toast.error('Gecersiz icerik: Veri eksik.');
-      return;
-    }
-
-    try {
-      const movieData = {
-        id: item.id.toString(),
-        title: item.title || item.name,
-        poster_path: item.poster_path,
-        release_date: item.release_date || item.first_air_date,
-        vote_average: item.vote_average,
-        type: item.type || 'movie',
-      };
-      
-      console.log('Gonderilen veri:', movieData);
-      const response = await API.post(`/api/library/${category}`, { movieData });
-      
-      const newLibrary = response.data.library || {
-        watched: [],
-        watchlist: [],
-        favorites: [],
-        disliked: [],
-      };
-      
-      setLibraryItems(newLibrary);
-      
-      // System notification oluştur
-      await createSystemNotification(
-        'library_update',
-        `"${movieData.title}" ${category} listesine eklendi`,
-        movieData
-      );
-      
-      console.log(`Added to ${category}:`, movieData.title || movieData.name);
-      toast.success(`Basariyla ${category} listesine eklendi!`);
-      return newLibrary;
-    } catch (err) {
-      console.error(`Add to ${category} error:`, err.response?.data?.message || err.message);
-      if (err.response?.status === 409) {
-        toast.error('Bu icerik zaten listede!');
-      } else if (err.response?.status === 400) {
-        toast.error(err.response.data.message);
-      } else if (err.code === 'ECONNABORTED') {
-        toast.error('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
-      } else {
-        toast.error('Ekleme islemi basarisiz. Lutfen tekrar deneyin.');
+  const addToLibrary = useCallback(
+    async (category, item) => {
+      if (!item || !item.id) {
+        console.error("Invalid item:", item);
+        toast.error("Gecersiz icerik: Veri eksik.");
+        return;
       }
-      throw err;
-    }
-  }, [createSystemNotification]);
 
-  const removeFromLibrary = useCallback(async (category, item) => {
-    try {
-      const response = await API.delete(`/api/library/${category}/${item.id}`);
-      
-      const newLibrary = response.data.library || {
-        watched: [],
-        watchlist: [],
-        favorites: [],
-        disliked: [],
-      };
-      
-      setLibraryItems(newLibrary);
-      
-      // System notification oluştur
-      await createSystemNotification(
-        'library_update',
-        `"${item.title || item.name}" ${category} listesinden kaldırıldı`,
-        item
-      );
-      
-      console.log(`Removed from ${category}:`, item.title || item.name);
-      toast.success(`Basariyla ${category} listesinden kaldirildi!`);
-      return newLibrary;
-    } catch (err) {
-      console.error(`Remove from ${category} error:`, err.response?.data?.message || err.message);
-      if (err.code === 'ECONNABORTED') {
-        toast.error('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
-      } else {
-        toast.error('Silme islemi basarisiz. Lutfen tekrar deneyin.');
+      try {
+        const movieData = {
+          id: item.id.toString(),
+          title: item.title || item.name,
+          poster_path: item.poster_path,
+          release_date: item.release_date || item.first_air_date,
+          vote_average: item.vote_average,
+          type: item.type || "movie",
+        };
+
+        console.log("Gonderilen veri:", movieData);
+        const response = await API.post(`/api/library/${category}`, {
+          movieData,
+        });
+
+        const newLibrary = response.data.library || {
+          watched: [],
+          watchlist: [],
+          favorites: [],
+          disliked: [],
+        };
+
+        setLibraryItems(newLibrary);
+
+        // System notification oluştur
+        await createSystemNotification(
+          "library_update",
+          `"${movieData.title}" ${category} listesine eklendi`,
+          movieData
+        );
+
+        console.log(`Added to ${category}:`, movieData.title || movieData.name);
+        toast.success(`Basariyla ${category} listesine eklendi!`);
+        return newLibrary;
+      } catch (err) {
+        console.error(
+          `Add to ${category} error:`,
+          err.response?.data?.message || err.message
+        );
+        if (err.response?.status === 409) {
+          toast.error("Bu icerik zaten listede!");
+        } else if (err.response?.status === 400) {
+          toast.error(err.response.data.message);
+        } else if (err.code === "ECONNABORTED") {
+          toast.error("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.");
+        } else {
+          toast.error("Ekleme islemi basarisiz. Lutfen tekrar deneyin.");
+        }
+        throw err;
       }
-      throw err;
-    }
-  }, [createSystemNotification]);
+    },
+    [createSystemNotification]
+  );
+
+  const removeFromLibrary = useCallback(
+    async (category, item) => {
+      try {
+        const response = await API.delete(
+          `/api/library/${category}/${item.id}`
+        );
+
+        const newLibrary = response.data.library || {
+          watched: [],
+          watchlist: [],
+          favorites: [],
+          disliked: [],
+        };
+
+        setLibraryItems(newLibrary);
+
+        // System notification oluştur
+        await createSystemNotification(
+          "library_update",
+          `"${item.title || item.name}" ${category} listesinden kaldırıldı`,
+          item
+        );
+
+        console.log(`Removed from ${category}:`, item.title || item.name);
+        toast.success(`Basariyla ${category} listesinden kaldirildi!`);
+        return newLibrary;
+      } catch (err) {
+        console.error(
+          `Remove from ${category} error:`,
+          err.response?.data?.message || err.message
+        );
+        if (err.code === "ECONNABORTED") {
+          toast.error("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.");
+        } else {
+          toast.error("Silme islemi basarisiz. Lutfen tekrar deneyin.");
+        }
+        throw err;
+      }
+    },
+    [createSystemNotification]
+  );
 
   if (loading) {
     return (
@@ -257,9 +323,9 @@ function AppContent() {
         draggable
         pauseOnHover
         theme="colored"
-        style={isMobile ? { bottom: '80px' } : {}}
+        style={isMobile ? { bottom: "80px" } : {}}
       />
-      
+
       <LightRays
         raysOrigin="top-center"
         raysColor="#ff7eb3"
@@ -275,111 +341,118 @@ function AppContent() {
         distortion={0.0}
         className="light-rays-background"
       />
-      
+
       {user && <ProfileMenu user={user} setUser={setUser} />}
- 
-      
+
       <Routes>
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
-            user ? <Navigate to="/dashboard" replace /> : <Login setUser={updateUser} />
-          } 
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login setUser={updateUser} />
+            )
+          }
         />
-        <Route 
-          path="/register" 
+        <Route
+          path="/register"
           element={
-            user ? <Navigate to="/dashboard" replace /> : <Register setUser={updateUser} />
-          } 
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Register setUser={updateUser} />
+            )
+          }
         />
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <PrivateRoute user={user}>
-              <Dashboard 
-                user={user} 
-                addToLibrary={addToLibrary} 
-                removeFromLibrary={removeFromLibrary} 
-                setUser={updateUser} 
+              <Dashboard
+                user={user}
+                addToLibrary={addToLibrary}
+                removeFromLibrary={removeFromLibrary}
+                setUser={updateUser}
                 libraryItems={libraryItems}
                 setLibraryItems={setLibraryItems}
               />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/library" 
+        <Route
+          path="/library"
           element={
             <PrivateRoute user={user}>
-              <EnhancedLibrary 
-                user={user} 
-                removeFromLibrary={removeFromLibrary} 
-                addToLibrary={addToLibrary} 
-                libraryItems={libraryItems} 
+              <EnhancedLibrary
+                user={user}
+                removeFromLibrary={removeFromLibrary}
+                addToLibrary={addToLibrary}
+                libraryItems={libraryItems}
               />
             </PrivateRoute>
-          } 
+          }
         />
         <Route
           path="/settings"
           element={
             <PrivateRoute user={user}>
-              <Settings 
-                user={user} 
-                setUser={updateUser} 
+              <Settings
+                user={user}
+                setUser={updateUser}
                 createSystemNotification={createSystemNotification}
               />
             </PrivateRoute>
           }
         />
-        <Route 
-          path="/notifications" 
+        <Route
+          path="/notifications"
           element={
             <PrivateRoute user={user}>
               <Notifications user={user} />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/recommendations" 
+        <Route
+          path="/recommendations"
           element={
             <PrivateRoute user={user}>
-              <AIRecommendations 
-                user={user} 
-                addToLibrary={addToLibrary} 
-                libraryItems={libraryItems} 
+              <AIRecommendations
+                user={user}
+                addToLibrary={addToLibrary}
+                libraryItems={libraryItems}
               />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/:type/:id" 
+        <Route
+          path="/:type/:id"
           element={
             <PrivateRoute user={user}>
               <MovieDetail user={user} addToLibrary={addToLibrary} />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/" 
-          element={
-            <Navigate to={user ? "/dashboard" : "/login"} replace />
-          } 
+        <Route
+          path="/"
+          element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
         />
-        <Route 
-          path="*" 
+        <Route
+          path="*"
           element={
             <div className="error-404">
               <h1>404 - Sayfa Bulunamadi</h1>
               <p>Aradiginiz sayfa mevcut degil.</p>
-              <button 
-                onClick={() => window.location.href = user ? '/dashboard' : '/login'}
+              <button
+                onClick={() =>
+                  (window.location.href = user ? "/dashboard" : "/login")
+                }
                 className="btn-primary"
               >
                 Ana Sayfaya Don
               </button>
             </div>
-          } 
+          }
         />
       </Routes>
     </div>
