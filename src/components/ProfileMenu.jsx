@@ -47,23 +47,12 @@ function ProfileMenu({ user, setUser }) {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Token temizlensin
-      localStorage.removeItem("token");
-
       if (setUser && typeof setUser === "function") {
         setUser(null);
       }
-      if (setLibraryItems && typeof setLibraryItems === "function") {
-        setLibraryItems({
-          watched: [],
-          watchlist: [],
-          favorites: [],
-          disliked: [],
-        });
-      }
       navigate("/login", { replace: true });
     }
-  }, [setUser, setLibraryItems, navigate]);
+  }, [setUser, navigate]);
 
   const navigateToPage = useCallback(
     (path) => {

@@ -125,26 +125,11 @@ function AppContent() {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      console.log("User session kontrol ediliyor...");
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("No token found");
-        setUser(null);
-        setLibraryItems({
-          watched: [],
-          watchlist: [],
-          favorites: [],
-          disliked: [],
-        });
-        setLoading(false);
-        return;
-      }
-
       try {
+        console.log("User session kontrol ediliyor...");
         const userResponse = await API.get("/api/auth/me");
 
-        // Partner bilgilerini düzelt
+        // Partner name fix - ID yerine isim göster
         let userData = userResponse.data.user;
         if (userData.partner && typeof userData.partner === "object") {
           userData.partner = {
@@ -179,7 +164,6 @@ function AppContent() {
         );
       } catch (error) {
         console.log("No user session or library:", error.response?.status);
-        localStorage.removeItem("token"); // ❗ geçersiz token temizle
         setUser(null);
         setLibraryItems({
           watched: [],
@@ -193,7 +177,7 @@ function AppContent() {
     };
 
     checkUserSession();
-  }, [setUser, setLibraryItems, setLoading]);
+  }, []);
 
   const addToLibrary = useCallback(
     async (category, item) => {
