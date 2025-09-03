@@ -101,10 +101,12 @@ function AppContent() {
     disliked: [],
   });
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isMobile } = useTheme();
 
   const updateUser = useCallback((newUser) => {
     setUser(newUser);
+    setIsAuthenticated(!!newUser);
   }, []);
 
   // System notification helper
@@ -123,67 +125,105 @@ function AppContent() {
     []
   );
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      try {
-        console.log("User session kontrol ediliyor...");
-        const userResponse = await API.get("/api/auth/me");
+  const checkUserSession = useCallback(async () => {
+    try {
+      console.log("🔐 User session kontrol ediliyor...");
 
-        // Partner name fix - ID yerine isim göster
-        let userData = userResponse.data.user;
-        if (userData.partner && typeof userData.partner === "object") {
-          userData.partner = {
-            id: userData.partner._id || userData.partner.id,
-            name: userData.partner.name,
-            username: userData.partner.username,
-            profilePicture: userData.partner.profilePicture,
-          };
-        }
-
-        setUser(userData);
-        console.log(
-          "User loaded:",
-          userData.email,
-          "Partner:",
-          userData.partner?.name
-        );
-
-        console.log("Library items yukleniyor...");
-        const libraryResponse = await API.get("/api/library");
-        setLibraryItems(
-          libraryResponse.data || {
-            watched: [],
-            watchlist: [],
-            favorites: [],
-            disliked: [],
-          }
-        );
-        console.log(
-          "Library loaded:",
-          JSON.stringify(libraryResponse.data, null, 2)
-        );
-      } catch (error) {
-        console.log("No user session or library:", error.response?.status);
+      // Token kontrolü
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("❌ Token bulunamadı");
         setUser(null);
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+
+      // Kullanıcı bilgilerini al
+      const userResponse = await API.get("/api/auth/me");
+
+      if (!userResponse.data?.user) {
+        throw new Error("User data not found");
+      }
+
+      // Partner name fix - ID yerine isim göster
+      let userData = userResponse.data.user;
+      if (userData.partner && typeof userData.partner === "object") {
+        userData.partner = {
+          id: userData.partner._id || userData.partner.id,
+          name: userData.partner.name,
+          username: userData.partner.username,
+          profilePicture: userData.partner.profilePicture,
+        };
+      }
+
+      setUser(userData);
+      setIsAuthenticated(true);
+      console.log(
+        "✅ User loaded:",
+        userData.email,
+        "Partner:",
+        userData.partner?.name
+      );
+
+      // Library items yükle
+      try {
+        console.log("📚 Library items yükleniyor...");
+        const libraryResponse = await API.get("/api/library");
+        const libraryData = libraryResponse.data || {
+          watched: [],
+          watchlist: [],
+          favorites: [],
+          disliked: [],
+        };
+
+        setLibraryItems(libraryData);
+        console.log("✅ Library loaded successfully");
+      } catch (libraryError) {
+        console.warn("⚠️ Library yüklenemedi:", libraryError.message);
+        // Library yüklenemese bile kullanıcı oturumunu devam ettir
         setLibraryItems({
           watched: [],
           watchlist: [],
           favorites: [],
           disliked: [],
         });
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.log(
+        "❌ Session check failed:",
+        error.response?.status,
+        error.message
+      );
 
-    checkUserSession();
+      // Token geçersizse temizle
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+
+      setUser(null);
+      setIsAuthenticated(false);
+      setLibraryItems({
+        watched: [],
+        watchlist: [],
+        favorites: [],
+        disliked: [],
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    checkUserSession();
+  }, [checkUserSession]);
 
   const addToLibrary = useCallback(
     async (category, item) => {
       if (!item || !item.id) {
-        console.error("Invalid item:", item);
-        toast.error("Gecersiz icerik: Veri eksik.");
+        console.error("❌ Invalid item:", item);
+        toast.error("Geçersiz içerik: Veri eksik.");
         return;
       }
 
@@ -197,7 +237,7 @@ function AppContent() {
           type: item.type || "movie",
         };
 
-        console.log("Gonderilen veri:", movieData);
+        console.log("📤 Gönderilen veri:", movieData);
         const response = await API.post(`/api/library/${category}`, {
           movieData,
         });
@@ -212,33 +252,45 @@ function AppContent() {
         setLibraryItems(newLibrary);
 
         // System notification oluştur
-        await createSystemNotification(
-          "library_update",
-          `"${movieData.title}" ${category} listesine eklendi`,
-          movieData
-        );
+        try {
+          await createSystemNotification(
+            "library_update",
+            `"${movieData.title}" ${category} listesine eklendi`,
+            movieData
+          );
+        } catch (notifError) {
+          console.warn("⚠️ Notification gönderilemedi:", notifError.message);
+        }
 
-        console.log(`Added to ${category}:`, movieData.title || movieData.name);
-        toast.success(`Basariyla ${category} listesine eklendi!`);
+        console.log(
+          `✅ Added to ${category}:`,
+          movieData.title || movieData.name
+        );
+        toast.success(`Başarıyla ${category} listesine eklendi!`);
         return newLibrary;
       } catch (err) {
         console.error(
-          `Add to ${category} error:`,
+          `❌ Add to ${category} error:`,
           err.response?.data?.message || err.message
         );
+
         if (err.response?.status === 409) {
-          toast.error("Bu icerik zaten listede!");
+          toast.error("Bu içerik zaten listede!");
         } else if (err.response?.status === 400) {
-          toast.error(err.response.data.message);
+          toast.error(err.response.data.message || "Geçersiz istek");
         } else if (err.code === "ECONNABORTED") {
           toast.error("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.");
+        } else if (err.response?.status === 401) {
+          toast.error("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
+          // Session yeniden kontrol et
+          checkUserSession();
         } else {
-          toast.error("Ekleme islemi basarisiz. Lutfen tekrar deneyin.");
+          toast.error("Ekleme işlemi başarısız. Lütfen tekrar deneyin.");
         }
         throw err;
       }
     },
-    [createSystemNotification]
+    [createSystemNotification, checkUserSession]
   );
 
   const removeFromLibrary = useCallback(
@@ -258,37 +310,46 @@ function AppContent() {
         setLibraryItems(newLibrary);
 
         // System notification oluştur
-        await createSystemNotification(
-          "library_update",
-          `"${item.title || item.name}" ${category} listesinden kaldırıldı`,
-          item
-        );
+        try {
+          await createSystemNotification(
+            "library_update",
+            `"${item.title || item.name}" ${category} listesinden kaldırıldı`,
+            item
+          );
+        } catch (notifError) {
+          console.warn("⚠️ Notification gönderilemedi:", notifError.message);
+        }
 
-        console.log(`Removed from ${category}:`, item.title || item.name);
-        toast.success(`Basariyla ${category} listesinden kaldirildi!`);
+        console.log(`✅ Removed from ${category}:`, item.title || item.name);
+        toast.success(`Başarıyla ${category} listesinden kaldırıldı!`);
         return newLibrary;
       } catch (err) {
         console.error(
-          `Remove from ${category} error:`,
+          `❌ Remove from ${category} error:`,
           err.response?.data?.message || err.message
         );
+
         if (err.code === "ECONNABORTED") {
           toast.error("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.");
+        } else if (err.response?.status === 401) {
+          toast.error("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
+          checkUserSession();
         } else {
-          toast.error("Silme islemi basarisiz. Lutfen tekrar deneyin.");
+          toast.error("Silme işlemi başarısız. Lütfen tekrar deneyin.");
         }
         throw err;
       }
     },
-    [createSystemNotification]
+    [createSystemNotification, checkUserSession]
   );
 
+  // Loading state
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="loading-spinner"></div>
-          SRMDB Yukleniyor...
+          <p>SRMDB Yükleniyor...</p>
         </div>
       </div>
     );
@@ -319,20 +380,20 @@ function AppContent() {
         pulsating={true}
         fadeDistance={1.0}
         saturation={1.0}
-        followMouse={!isMobile} // Mobile'da mouse takibi kapalı
+        followMouse={!isMobile}
         mouseInfluence={isMobile ? 0 : 0.1}
         noiseAmount={0.0}
         distortion={0.0}
         className="light-rays-background"
       />
 
-      {user && <ProfileMenu user={user} setUser={setUser} />}
+      {isAuthenticated && user && <ProfileMenu user={user} setUser={setUser} />}
 
       <Routes>
         <Route
           path="/login"
           element={
-            user ? (
+            isAuthenticated ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <Login setUser={updateUser} />
@@ -342,7 +403,7 @@ function AppContent() {
         <Route
           path="/register"
           element={
-            user ? (
+            isAuthenticated ? (
               <Navigate to="/dashboard" replace />
             ) : (
               <Register setUser={updateUser} />
@@ -419,21 +480,25 @@ function AppContent() {
         />
         <Route
           path="/"
-          element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
+          element={
+            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          }
         />
         <Route
           path="*"
           element={
             <div className="error-404">
-              <h1>404 - Sayfa Bulunamadi</h1>
-              <p>Aradiginiz sayfa mevcut degil.</p>
+              <h1>404 - Sayfa Bulunamadı</h1>
+              <p>Aradığınız sayfa mevcut değil.</p>
               <button
                 onClick={() =>
-                  (window.location.href = user ? "/dashboard" : "/login")
+                  (window.location.href = isAuthenticated
+                    ? "/dashboard"
+                    : "/login")
                 }
                 className="btn-primary"
               >
-                Ana Sayfaya Don
+                Ana Sayfaya Dön
               </button>
             </div>
           }
