@@ -29,8 +29,9 @@ app.use(
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "https://srmdb-7vyspt79r-salihapekers-projects.vercel.app", // YENİ URL
-        /^https:\/\/srmdb-.*-salihapekers-projects\.vercel\.app$/, // Tüm deployment'ları kapsar
+        "https://srmdb.vercel.app", // YENİ SABİT URL
+        "https://srmdb-k8qxhmil5-salihapekers-projects.vercel.app",
+        /^https:\/\/srmdb-.*-salihapekers-projects\.vercel\.app$/, // Geçici URL'ler için
       ];
 
       if (!origin) return callback(null, true);
