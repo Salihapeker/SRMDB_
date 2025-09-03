@@ -10,6 +10,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import Login from "./pages/Login";
@@ -17,10 +18,9 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import ProfileMenu from "./components/ProfileMenu";
-
 import LightRays from "./components/LightRays";
 import "./components/LightRays.css";
-import API from "./services/api";
+import API, { authHelpers } from "./services/api"; // authHelpers import eklendi
 import AIRecommendations from "./pages/AIRecommendations";
 import MovieDetail from "./pages/MovieDetail";
 import EnhancedLibrary from "./pages/EnhancedLibrary";
@@ -103,13 +103,13 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isMobile } = useTheme();
+  const navigate = useNavigate(); // useNavigate eklendi
 
   const updateUser = useCallback((newUser) => {
     setUser(newUser);
     setIsAuthenticated(!!newUser);
   }, []);
 
-  // System notification helper
   const createSystemNotification = useCallback(
     async (type, message, relatedItem = null) => {
       try {
@@ -124,6 +124,7 @@ function AppContent() {
     },
     []
   );
+
   const checkUserSession = useCallback(async () => {
     try {
       console.log("🔐 User session kontrol ediliyor...");
@@ -166,7 +167,7 @@ function AppContent() {
         error.message
       );
       if (error.response?.status === 401) {
-        authHelpers.clearAuth();
+        authHelpers.clearAuth(); // authHelpers burada kullanılıyor
       }
       setUser(null);
       setIsAuthenticated(false);
@@ -184,6 +185,7 @@ function AppContent() {
   useEffect(() => {
     checkUserSession();
   }, [checkUserSession]);
+
   const addToLibrary = useCallback(
     async (category, item) => {
       if (!item || !item.id) {
@@ -216,7 +218,6 @@ function AppContent() {
 
         setLibraryItems(newLibrary);
 
-        // System notification oluştur
         try {
           await createSystemNotification(
             "library_update",
@@ -247,7 +248,6 @@ function AppContent() {
           toast.error("İstek zaman aşımına uğradı. Lütfen tekrar deneyin.");
         } else if (err.response?.status === 401) {
           toast.error("Oturum süresi doldu. Lütfen tekrar giriş yapın.");
-          // Session yeniden kontrol et
           checkUserSession();
         } else {
           toast.error("Ekleme işlemi başarısız. Lütfen tekrar deneyin.");
@@ -274,7 +274,6 @@ function AppContent() {
 
         setLibraryItems(newLibrary);
 
-        // System notification oluştur
         try {
           await createSystemNotification(
             "library_update",
@@ -308,7 +307,6 @@ function AppContent() {
     [createSystemNotification, checkUserSession]
   );
 
-  // Loading state
   if (loading) {
     return (
       <div className="loading-container">
