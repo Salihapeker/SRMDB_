@@ -7,7 +7,7 @@ import './MovieDetail.css';
 const MovieDetail = ({ user, addToLibrary }) => {
   const { id, type } = useParams();
   const navigate = useNavigate();
-  
+
   const [movieData, setMovieData] = useState(null);
   const [userReview, setUserReview] = useState({ rating: 0, comment: '' });
   const [partnerReview, setPartnerReview] = useState(null);
@@ -19,6 +19,8 @@ const MovieDetail = ({ user, addToLibrary }) => {
     together: false,
   });
   const [averageRating, setAverageRating] = useState(null);
+  const [jointReview, setJointReview] = useState({ rating: 0, comment: '' });
+  const [activeTab, setActiveTab] = useState('my_review'); // 'my_review', 'partner_review', 'joint_review'
 
   const fetchWithTimeout = async (url, options, timeout = 15000) => {
     const controller = new AbortController();
@@ -39,8 +41,9 @@ const MovieDetail = ({ user, addToLibrary }) => {
   const fetchMovieDetail = useCallback(async () => {
     const startTime = Date.now();
     console.log(`Fetching movie details for ${type}/${id}`);
-    
+
     try {
+      setLoading(true);
       const apiKey = process.env.REACT_APP_TMDB_API_KEY;
       if (!apiKey) {
         throw new Error('TMDB API anahtarı bulunamadı.');
@@ -50,11 +53,13 @@ const MovieDetail = ({ user, addToLibrary }) => {
       const tmdbResponse = await fetchWithTimeout(
         `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=tr-TR&append_to_response=credits`,
         {},
-        10000 // 10 saniye timeout
+        10000
       );
+
       if (!tmdbResponse.ok) {
         throw new Error(`TMDB API hatası: ${tmdbResponse.status}`);
       }
+
       const tmdbData = await tmdbResponse.json();
 
       // Backend API çağrısı
@@ -63,6 +68,8 @@ const MovieDetail = ({ user, addToLibrary }) => {
       setMovieData(tmdbData);
       setUserReview(reviewResponse.data.userReview || { rating: 0, comment: '' });
       setPartnerReview(reviewResponse.data.partnerReview || null);
+      setJointReview(reviewResponse.data.jointReview || { rating: 0, comment: '' });
+
       setWatchedStatus(reviewResponse.data.watchedStatus || {
         user: false,
         partner: false,
@@ -70,9 +77,14 @@ const MovieDetail = ({ user, addToLibrary }) => {
       });
 
       // Ortalama puan hesapla
-      if (reviewResponse.data.userReview?.rating && reviewResponse.data.partnerReview?.rating) {
-        const avg = ((reviewResponse.data.userReview.rating + reviewResponse.data.partnerReview.rating) / 2).toFixed(1);
-        setAverageRating(avg);
+      const ratings = [];
+      if (reviewResponse.data.userReview?.rating) ratings.push(reviewResponse.data.userReview.rating);
+      if (reviewResponse.data.partnerReview?.rating) ratings.push(reviewResponse.data.partnerReview.rating);
+      if (reviewResponse.data.jointReview?.rating) ratings.push(reviewResponse.data.jointReview.rating);
+
+      if (ratings.length > 0) {
+        const sum = ratings.reduce((a, b) => a + b, 0);
+        setAverageRating((sum / ratings.length).toFixed(1));
       }
     } catch (error) {
       console.error('Film detayları alınırken hata:', error.message);
@@ -84,36 +96,38 @@ const MovieDetail = ({ user, addToLibrary }) => {
   }, [id, type]);
 
   useEffect(() => {
-    if (
-      typeof id === 'string' &&
-      typeof type === 'string' &&
-      id.trim() !== '' &&
-      type.trim() !== '' &&
-      ['movie', 'tv'].includes(type) &&
-      !isNaN(id)
-    ) {
+    if (id && type) {
       fetchMovieDetail();
-    } else {
-      console.error('Geçersiz ID veya type:', { id, type });
-      setErrorMessage('Geçersiz film/dizi ID veya tipi.');
-      setLoading(false);
     }
   }, [id, type, fetchMovieDetail]);
 
-  const handleSaveReview = async () => {
-    if (!watchedStatus.user && !watchedStatus.together) {
-      toast.error('Puan ve yorum için önce izlendi olarak işaretleyin!');
-      return;
-    }
-    
-    if (!userReview.rating || userReview.rating < 1 || userReview.rating > 5) {
-      toast.error('Lütfen 1-5 arasında puan verin!');
-      return;
+  const handleSaveReview = async (isJoint = false) => {
+    if (isJoint) {
+      if (!watchedStatus.together) {
+        toast.error('Ortak yorum için filmi "Birlikte İzledik" olarak işaretlemelisiniz!');
+        return;
+      }
+      if (!jointReview.rating || jointReview.rating < 1 || jointReview.rating > 5) {
+        toast.error('Lütfen 1-5 arasında puan verin!');
+        return;
+      }
+    } else {
+      if (!watchedStatus.user && !watchedStatus.together) {
+        toast.error('Puan ve yorum için önce izlendi olarak işaretleyin!');
+        return;
+      }
+      if (!userReview.rating || userReview.rating < 1 || userReview.rating > 5) {
+        toast.error('Lütfen 1-5 arasında puan verin!');
+        return;
+      }
     }
 
     try {
-      console.log('Saving review:', userReview);
-      const response = await API.post(`/api/reviews/${type}/${id}`, {
+      const endpoint = isJoint ? `/api/reviews/joint/${type}/${id}` : `/api/reviews/${type}/${id}`;
+      const payload = isJoint ? {
+        rating: jointReview.rating,
+        comment: jointReview.comment
+      } : {
         rating: userReview.rating,
         comment: userReview.comment,
         movieData: {
@@ -124,19 +138,26 @@ const MovieDetail = ({ user, addToLibrary }) => {
           vote_average: movieData?.vote_average || 0,
           type: type || 'movie',
         },
-      });
+      };
+
+      const response = await API.post(endpoint, payload);
 
       toast.success('Değerlendirmeniz kaydedildi!');
-      setUserReview({
-        rating: response.data.userReview.rating,
-        comment: response.data.userReview.comment,
-      });
 
-      if (response.data.partnerReview) {
-        setPartnerReview(response.data.partnerReview);
-        const avg = ((response.data.userReview.rating + response.data.partnerReview.rating) / 2).toFixed(1);
-        setAverageRating(avg);
+      if (isJoint) {
+        // Joint response handling usually returns the updated reviews array or the review itself
+        // Assuming backend returns { message, reviews: [...] }
+        // We need to locally update state or fetch details again.
+        // For simplicity in this specialized update:
+        fetchMovieDetail();
+      } else {
+        setUserReview({
+          rating: response.data.userReview.rating,
+          comment: response.data.userReview.comment,
+        });
+        fetchMovieDetail();
       }
+
     } catch (error) {
       console.error('Değerlendirme hatası:', error);
       toast.error(error.response?.data?.message || 'Değerlendirme kaydedilemedi.');
@@ -203,7 +224,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
         <div className="error-state">
           <h3>Hata</h3>
           <p>{errorMessage}</p>
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
             className="back-btn"
           >
@@ -219,7 +240,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
       <div className="detail-container">
         <div className="error-state">
           <h3>Film/Dizi bulunamadı</h3>
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
             className="back-btn"
           >
@@ -238,7 +259,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
       <button className="back-btn" onClick={() => navigate(-1)}>
         ← Geri
       </button>
-      
+
       <div className="detail-header">
         <div className="poster-section">
           {movieData.poster_path ? (
@@ -251,7 +272,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
           ) : (
             <div className="poster-placeholder">Poster Yok</div>
           )}
-          
+
           <div className="watched-indicators">
             {watchedStatus.user && <span className="watched-badge user">👤 İzledim</span>}
             {watchedStatus.partner && user?.partner?.name && (
@@ -270,7 +291,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
         <div className="info-section">
           <h1>{movieData.title || movieData.name || 'Bilinmiyor'}</h1>
           {movieData.tagline && <p className="tagline">{movieData.tagline}</p>}
-          
+
           <div className="basic-info">
             <span>📅 {movieData.release_date || movieData.first_air_date || 'Bilinmiyor'}</span>
             <span>⭐ IMDB: {movieData.vote_average?.toFixed(1) || 'N/A'}/10</span>
@@ -302,22 +323,22 @@ const MovieDetail = ({ user, addToLibrary }) => {
           </div>
 
           <div className="library-actions">
-            <button 
-              onClick={() => addToLibrary("watchlist", movieData)} 
+            <button
+              onClick={() => addToLibrary("watchlist", movieData)}
               className="btn-watchlist"
             >
               📌 İzlenecekler
             </button>
             {(watchedStatus.user || watchedStatus.together) && (
               <>
-                <button 
-                  onClick={() => addToLibrary("favorites", movieData)} 
+                <button
+                  onClick={() => addToLibrary("favorites", movieData)}
                   className="btn-favorite"
                 >
                   ❤️ Favorilere Ekle
                 </button>
-                <button 
-                  onClick={() => addToLibrary("disliked", movieData)} 
+                <button
+                  onClick={() => addToLibrary("disliked", movieData)}
                   className="btn-dislike"
                 >
                   👎 Beğenmedim
@@ -331,16 +352,16 @@ const MovieDetail = ({ user, addToLibrary }) => {
       <div className="watched-actions">
         <h3>İzlenme Durumu</h3>
         <div className="watched-buttons">
-          <button 
+          <button
             onClick={() => updateWatchedStatus('user')}
             className={`watched-btn ${watchedStatus.user ? 'active' : ''}`}
             aria-label="Kendi izleme durumunu işaretle"
           >
             👤 İzledim
           </button>
-          
+
           {user?.partner?.name && (
-            <button 
+            <button
               onClick={() => updateWatchedStatus('together')}
               className={`watched-btn ${watchedStatus.together ? 'active' : ''}`}
               aria-label="Birlikte izleme durumunu işaretle"
@@ -348,8 +369,8 @@ const MovieDetail = ({ user, addToLibrary }) => {
               💕 Birlikte İzledik
             </button>
           )}
-          
-          <button 
+
+          <button
             onClick={() => updateWatchedStatus('remove')}
             className="watched-btn remove-watched"
           >
@@ -360,46 +381,136 @@ const MovieDetail = ({ user, addToLibrary }) => {
 
       {(watchedStatus.user || watchedStatus.together) && (
         <div className="review-section">
-          <h3>Değerlendirmen</h3>
-          
-          <div className="rating-input">
-            <label>Puanın:</label>
-            <StarRating 
-              rating={userReview.rating} 
-              onRatingChange={(rating) => setUserReview(prev => ({ ...prev, rating }))}
-            />
-            <span>({userReview.rating}/5)</span>
+          <div className="review-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
+            <button
+              className={`tab-btn ${activeTab === 'my_review' ? 'active' : ''}`}
+              onClick={() => setActiveTab('my_review')}
+              style={{
+                padding: '10px',
+                borderBottom: activeTab === 'my_review' ? '2px solid var(--primary-color)' : 'none',
+                background: 'none',
+                color: activeTab === 'my_review' ? 'var(--primary-color)' : 'var(--text-color)',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'my_review' ? 'bold' : 'normal'
+              }}
+            >
+              📝 Benim Yorumum
+            </button>
+            {user?.partner && (
+              <>
+                <button
+                  className={`tab-btn ${activeTab === 'partner_review' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('partner_review')}
+                  style={{
+                    padding: '10px',
+                    borderBottom: activeTab === 'partner_review' ? '2px solid var(--primary-color)' : 'none',
+                    background: 'none',
+                    color: activeTab === 'partner_review' ? 'var(--primary-color)' : 'var(--text-color)',
+                    cursor: 'pointer',
+                    fontWeight: activeTab === 'partner_review' ? 'bold' : 'normal'
+                  }}
+                >
+                  👤 Partner
+                </button>
+                {watchedStatus.together && (
+                  <button
+                    className={`tab-btn ${activeTab === 'joint_review' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('joint_review')}
+                    style={{
+                      padding: '10px',
+                      borderBottom: activeTab === 'joint_review' ? '2px solid #e91e63' : 'none',
+                      background: 'none',
+                      color: activeTab === 'joint_review' ? '#e91e63' : 'var(--text-color)',
+                      cursor: 'pointer',
+                      fontWeight: activeTab === 'joint_review' ? 'bold' : 'normal'
+                    }}
+                  >
+                    💞 Ortak Yorum
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
-          <div className="comment-input">
-            <label>Yorumun:</label>
-            <textarea
-              value={userReview.comment}
-              onChange={(e) => setUserReview(prev => ({ ...prev, comment: e.target.value }))}
-              placeholder="Bu film/dizi hakkında ne düşünüyorsun?"
-              rows="4"
-              aria-label="Yorum yaz"
-            />
-          </div>
+          {activeTab === 'my_review' && (
+            <div className="user-review">
+              <h3>Sizin Yorumunuz</h3>
+              <div className="rating-input">
+                <label>Puanın:</label>
+                <StarRating
+                  rating={userReview.rating}
+                  onRatingChange={(rating) => setUserReview(prev => ({ ...prev, rating }))}
+                />
+                <span>({userReview.rating}/5)</span>
+              </div>
 
-          <button onClick={handleSaveReview} className="save-review-btn">
-            💾 Değerlendirmeyi Kaydet
-          </button>
-        </div>
-      )}
+              <div className="comment-input">
+                <label>Yorumun:</label>
+                <textarea
+                  value={userReview.comment}
+                  onChange={(e) =>
+                    setUserReview(prev => ({ ...prev, comment: e.target.value }))
+                  }
+                  placeholder="Bu içerik hakkında ne düşünüyorsunuz?"
+                  rows="4"
+                />
+              </div>
+              <button onClick={() => handleSaveReview(false)} className="save-review-btn">
+                💾 Kaydet
+              </button>
+            </div>
+          )}
 
-      {user?.partner?.name && partnerReview && (
-        <div className="partner-review">
-          <h3>{user.partner.name || user.partner.username || 'Partner'}'in Değerlendirmesi</h3>
-          
-          <div className="partner-rating">
-            <StarRating rating={partnerReview.rating} readonly />
-            <span>({partnerReview.rating}/5)</span>
-          </div>
-          
-          {partnerReview.comment && (
-            <div className="partner-comment">
-              <p>"{partnerReview.comment}"</p>
+          {activeTab === 'partner_review' && user?.partner && (
+            <div className="partner-review">
+              <h3>{user.partner.name || user.partner.username}'in Yorumu</h3>
+              {partnerReview ? (
+                <>
+                  <div className="partner-rating">
+                    <StarRating rating={partnerReview.rating} readonly />
+                    <span>({partnerReview.rating}/5)</span>
+                  </div>
+                  <p className="partner-comment">
+                    "{partnerReview.comment || 'Yorum yok.'}"
+                  </p>
+                  <small className="review-date">
+                    {new Date(partnerReview.createdAt).toLocaleDateString(
+                      'tr-TR'
+                    )}
+                  </small>
+                </>
+              ) : (
+                <p className="no-review">Partneriniz henüz değerlendirmedi.</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'joint_review' && user?.partner && watchedStatus.together && (
+            <div className="review-card joint-review" style={{ border: '1px solid #e91e63', padding: '15px', borderRadius: '10px', background: 'rgba(233, 30, 99, 0.05)' }}>
+              <h3 style={{ color: '#e91e63' }}>💞 Ortak Yorumumuz</h3>
+              <div className="rating-input">
+                <label>Ortak Puanınız:</label>
+                <StarRating
+                  rating={jointReview.rating}
+                  onRatingChange={(rating) => setJointReview(prev => ({ ...prev, rating }))}
+                />
+                <span>({jointReview.rating}/5)</span>
+              </div>
+              <div className="comment-input">
+                <label>Ortak Yorumunuz:</label>
+                <textarea
+                  value={jointReview.comment}
+                  onChange={(e) =>
+                    setJointReview(prev => ({ ...prev, comment: e.target.value }))
+                  }
+                  placeholder="Birlikte izlediğiniz bu film hakkında ortak düşünceleriniz neler?"
+                  rows="4"
+                  style={{ borderColor: '#e91e63', width: '100%' }}
+                />
+              </div>
+              <button onClick={() => handleSaveReview(true)} className="save-review-btn" style={{ backgroundColor: '#e91e63', borderColor: '#e91e63' }}>
+                💞 Ortak Yorumu Kaydet
+              </button>
             </div>
           )}
         </div>
@@ -410,8 +521,8 @@ const MovieDetail = ({ user, addToLibrary }) => {
           <h3>Uyumluluk Skoru</h3>
           <div className="compatibility-meter">
             <div className="meter-bar">
-              <div 
-                className="meter-fill" 
+              <div
+                className="meter-fill"
                 style={{ width: `${averageRating * 20}%` }}
               ></div>
             </div>

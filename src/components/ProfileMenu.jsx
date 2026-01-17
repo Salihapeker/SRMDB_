@@ -1,33 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../services/api";
+import { useTheme } from "../App";
+import API, { authHelpers } from "../services/api";
 import "./ProfileMenu.css";
-
-// Dark Mode Hook - useTheme yerine basit hook
-const useDarkMode = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDarkMode ? "dark" : "light"
-    );
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  return { isDarkMode, toggleDarkMode };
-};
 
 function ProfileMenu({ user, setUser }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const handleToggle = useCallback(() => {
     setIsOpen((prev) => !prev);
@@ -43,10 +24,12 @@ function ProfileMenu({ user, setUser }) {
     console.log("Kullanici cikis yapiyor...");
     try {
       await API.post("/api/auth/logout");
-      console.log("Logout successful");
+      console.log("Logout api call successful");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
+      // Kesinlikle temizle
+      authHelpers.clearAuth();
       if (setUser && typeof setUser === "function") {
         setUser(null);
       }

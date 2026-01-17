@@ -1,19 +1,32 @@
 /* MovieDetail.css - Modern ve kullanıcı dostu tasarım */
 
 :root {
-  --primary-color: #4a90e2; /* Daha canlı bir mavi */
-  --secondary-color: #ff7eb3; /* Yumuşak pembe */
-  --accent-color: #34c759; /* Canlı yeşil */
-  --error-color: #ff3b30; /* Kırmızı hata rengi */
-  --bg-color: #ffffff; /* Açık tema arka plan */
-  --bg-dark: #1a1a1a; /* Karanlık tema arka plan */
-  --bg-card: #f5f5f5; /* Kart arka planı */
-  --bg-card-dark: #2c2c2e; /* Karanlık tema kart arka planı */
-  --text-color: #1a1a1a; /* Açık tema metin */
-  --text-dark: #ffffff; /* Karanlık tema metin */
-  --text-secondary: #6b7280; /* İkincil metin */
-  --border-color: #e5e7eb; /* Açık tema sınır */
-  --border-dark: #3f3f46; /* Karanlık tema sınır */
+  --primary-color: #4a90e2;
+  /* Daha canlı bir mavi */
+  --secondary-color: #ff7eb3;
+  /* Yumuşak pembe */
+  --accent-color: #34c759;
+  /* Canlı yeşil */
+  --error-color: #ff3b30;
+  /* Kırmızı hata rengi */
+  --bg-color: #ffffff;
+  /* Açık tema arka plan */
+  --bg-dark: #1a1a1a;
+  /* Karanlık tema arka plan */
+  --bg-card: #f5f5f5;
+  /* Kart arka planı */
+  --bg-card-dark: #2c2c2e;
+  /* Karanlık tema kart arka planı */
+  --text-color: #1a1a1a;
+  /* Açık tema metin */
+  --text-dark: #ffffff;
+  /* Karanlık tema metin */
+  --text-secondary: #6b7280;
+  /* İkincil metin */
+  --border-color: #e5e7eb;
+  /* Açık tema sınır */
+  --border-dark: #3f3f46;
+  /* Karanlık tema sınır */
   --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.15);
   --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -68,7 +81,8 @@
 }
 
 /* Loading ve hata durumları */
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,8 +102,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-state h3 {
@@ -177,15 +196,22 @@
 /* İzlenme rozetleri */
 .watched-indicators {
   position: absolute;
-  top: var(--spacing-sm); /* 12px */
-  right: var(--spacing-sm); /* 12px */
+  top: var(--spacing-sm);
+  /* 12px */
+  right: var(--spacing-sm);
+  /* 12px */
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs); /* 8px */
-  padding: var(--spacing-xs); /* Rozetlere hafif dolgu */
-  background: rgba(0, 0, 0, 0.5); /* Daha şeffaf arka plan */
-  border-radius: var(--radius-sm); /* 8px */
-  z-index: 10; /* Posterin üstünde */
+  gap: var(--spacing-xs);
+  /* 8px */
+  padding: var(--spacing-xs);
+  /* Rozetlere hafif dolgu */
+  background: rgba(0, 0, 0, 0.5);
+  /* Daha şeffaf arka plan */
+  border-radius: var(--radius-sm);
+  /* 8px */
+  z-index: 10;
+  /* Posterin üstünde */
 }
 
 .watched-badge {
@@ -203,9 +229,17 @@
   transform: scale(1.05);
 }
 
-.watched-badge.user { background: var(--accent-color); }
-.watched-badge.partner { background: var(--primary-color); }
-.watched-badge.together { background: var(--secondary-color); }
+.watched-badge.user {
+  background: var(--accent-color);
+}
+
+.watched-badge.partner {
+  background: var(--primary-color);
+}
+
+.watched-badge.together {
+  background: var(--secondary-color);
+}
 
 /* Bilgi bölümü */
 .info-section h1 {
@@ -247,11 +281,21 @@
 }
 
 /* Bölüm başlıkları */
-.overview, .credits, .watched-actions, .review-section, .partner-review, .compatibility-score {
+.overview,
+.credits,
+.watched-actions,
+.review-section,
+.partner-review,
+.compatibility-score {
   margin-bottom: var(--spacing-xl);
 }
 
-.overview h3, .credits h3, .watched-actions h3, .review-section h3, .partner-review h3, .compatibility-score h3 {
+.overview h3,
+.credits h3,
+.watched-actions h3,
+.review-section h3,
+.partner-review h3,
+.compatibility-score h3 {
   color: var(--primary-color);
   font-size: var(--font-xl);
   margin-bottom: var(--spacing-md);
@@ -260,7 +304,8 @@
   font-weight: 600;
 }
 
-.overview p, .credits p {
+.overview p,
+.credits p {
   color: var(--text-secondary);
   line-height: 1.6;
   font-size: var(--font-base);
@@ -274,16 +319,19 @@
 }
 
 .library-actions button {
-  padding: var(--spacing-md) var(--spacing-xl); /* Daha büyük: 16px 32px */
+  padding: var(--spacing-md) var(--spacing-xl);
+  /* Daha büyük: 16px 32px */
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: var(--font-base); /* 1rem */
+  font-size: var(--font-base);
+  /* 1rem */
   font-weight: 600;
   color: var(--text-dark);
   transition: transform var(--transition-fast), box-shadow var(--transition-normal);
   min-height: 44px;
-  min-width: 160px; /* Daha geniş buton */
+  min-width: 160px;
+  /* Daha geniş buton */
 }
 
 .library-actions button:hover {
@@ -291,9 +339,17 @@
   box-shadow: var(--shadow-medium);
 }
 
-.btn-favorite { background: linear-gradient(90deg, var(--error-color), #ff6b6b); }
-.btn-watchlist { background: linear-gradient(90deg, var(--secondary-color), #ff9ece); }
-.btn-dislike { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+.btn-favorite {
+  background: linear-gradient(90deg, var(--error-color), #ff6b6b);
+}
+
+.btn-watchlist {
+  background: linear-gradient(90deg, var(--secondary-color), #ff9ece);
+}
+
+.btn-dislike {
+  background: linear-gradient(90deg, #6b7280, #9ca3af);
+}
 
 /* İzlenme durumu butonları */
 .watched-buttons {

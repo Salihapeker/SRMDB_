@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const compression = require("compression");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/.env" });
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
@@ -64,6 +65,7 @@ app.use(
   })
 );
 
+app.use(compression());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
@@ -137,6 +139,15 @@ const sharedLibrarySchema = new mongoose.Schema({
       score: { type: Number, min: 0, max: 100 },
     },
   ],
+  reviews: [
+    {
+      movieId: String,
+      type: { type: String, enum: ["movie", "tv"] },
+      rating: Number,
+      comment: String,
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 const archiveSchema = new mongoose.Schema({
@@ -153,7 +164,13 @@ const Archive = mongoose.model("Archive", archiveSchema);
 
 // Auth Middleware
 const authMiddleware = async (req, res, next) => {
-  const token = req.cookies.token;
+  let token = req.cookies.token;
+
+  // Header kontrolü (Cookie yoksa veya cross-site ise)
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
   if (!token) {
     return res.status(401).json({ message: "Token gerekli" });
   }
@@ -303,6 +320,7 @@ app.post("/api/auth/register", async (req, res) => {
         email,
         profilePicture: profilePicture || "",
         partner: null,
+        token: token, // Frontend için token eklendi
       },
     });
   } catch (error) {
@@ -362,6 +380,7 @@ app.post("/api/auth/login", async (req, res) => {
         email: user.email,
         partner: user.partner,
         profilePicture: user.profilePicture,
+        token: token, // Frontend için token eklendi
       },
     });
   } catch (error) {
@@ -431,11 +450,11 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
         email: user.email,
         partner: user.partner
           ? {
-              id: user.partner._id,
-              username: user.partner.username,
-              name: user.partner.name,
-              profilePicture: user.partner.profilePicture,
-            }
+            id: user.partner._id,
+            username: user.partner.username,
+            name: user.partner.name,
+            profilePicture: user.partner.profilePicture,
+          }
           : null,
         profilePicture: user.profilePicture,
       },
@@ -996,10 +1015,10 @@ app.get("/api/reviews/:type/:id", authMiddleware, async (req, res) => {
     res.json({
       userReview: userReview
         ? {
-            rating: userReview.rating,
-            comment: userReview.comment,
-            watched: watchedStatus.user,
-          }
+          rating: userReview.rating,
+          comment: userReview.comment,
+          watched: watchedStatus.user,
+        }
         : { rating: 0, comment: "", watched: watchedStatus.user },
       partnerReview,
       watchedStatus,
@@ -1185,18 +1204,30 @@ app.post("/api/partner/request", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Zaten bir partneriniz var" });
     }
 
+    // Check if trying to add self
+    if (recipient._id.toString() === sender._id.toString()) {
+      return res.status(400).json({ message: "Kendinize davet gönderemezsiniz" });
+    }
+
+    // Check if already partners
+    if (recipient.partner || sender.partner) {
+      return res.status(400).json({ message: "Sizin veya karşı tarafın zaten partneri var" });
+    }
+
+    // Check existing pending request
     const existingRequest = recipient.notifications.find(
       (n) =>
-        n.from && // from alanının varlığını kontrol et
-        n.from._id && // from._id'nin varlığını kontrol et
+        n.from &&
+        n.from._id &&
         n.from._id.toString() === sender._id.toString() &&
         n.type === "partner_request" &&
         n.status === "pending"
     );
+
     if (existingRequest) {
       return res
         .status(400)
-        .json({ message: "Bu kullanıcıya zaten bir davet gönderilmiş" });
+        .json({ message: "Bu kullanıcıya zaten bekleyen bir davetiniz var" });
     }
 
     const notification = {
@@ -1216,6 +1247,7 @@ app.post("/api/partner/request", authMiddleware, async (req, res) => {
     recipient.notifications.push(notification);
     await recipient.save();
 
+    // Socket ile bildirim gönder
     io.to(recipient._id.toString()).emit("notificationUpdate", {
       message: `${sender.username} size partner daveti gönderdi`,
       notification,
@@ -1223,10 +1255,49 @@ app.post("/api/partner/request", authMiddleware, async (req, res) => {
 
     res
       .status(200)
-      .json({ message: `${recipient.username}'e davet gönderildi` });
+      .json({ message: `${recipient.username || recipient.name} kullanıcısına davet gönderildi` });
   } catch (error) {
     console.error("Partner davet hatası:", error);
-    res.status(500).json({ message: "Sunucu hatası" });
+    res.status(500).json({ message: "Sunucu hatası: Davet gönderilemedi" });
+  }
+});
+
+// ✅ GET SENT PARTNER REQUESTS
+app.get("/api/partner/sent-requests", authMiddleware, async (req, res) => {
+  try {
+    const pendingUsers = await User.find({
+      "notifications": {
+        $elemMatch: {
+          "from._id": req.user._id,
+          "type": "partner_request",
+          "status": "pending"
+        }
+      }
+    }).select("username name profilePicture notifications");
+
+    const sentRequests = pendingUsers.map(u => {
+      const notif = u.notifications.find(n =>
+        n.from && n.from._id &&
+        n.from._id.toString() === req.user._id.toString() &&
+        n.type === "partner_request" &&
+        n.status === "pending"
+      );
+      return {
+        _id: notif._id,
+        to: {
+          _id: u._id,
+          username: u.username,
+          name: u.name,
+          profilePicture: u.profilePicture
+        },
+        createdAt: notif.createdAt
+      };
+    });
+
+    res.json(sentRequests);
+  } catch (error) {
+    console.error("Giden istekleri getirme hatası:", error);
+    res.status(500).json({ message: "İstekler alınamadı" });
   }
 });
 
@@ -1850,6 +1921,108 @@ async function generateRecommendations(favorites, watched, limit = 40) {
   // İstenen limit kadar (40) öneri döndür
   return uniqueRecommendations.slice(0, limit);
 }
+
+// ✅ ORTAK YORUM EKLEME
+app.post("/api/reviews/joint/:type/:id", authMiddleware, async (req, res) => {
+  const { type, id } = req.params;
+  const { rating, comment } = req.body;
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user.partner) {
+      return res.status(400).json({ message: "Partneriniz yok" });
+    }
+
+    const sharedLibrary = await SharedLibrary.findOne({
+      users: { $all: [userId, user.partner] },
+    });
+
+    if (!sharedLibrary) {
+      return res.status(404).json({ message: "Ortak kütüphane bulunamadı" });
+    }
+
+    // Varsa güncelle, yoksa ekle
+    const existingIndex = sharedLibrary.reviews.findIndex(
+      (r) => r.movieId === id && r.type === type
+    );
+
+    if (existingIndex > -1) {
+      sharedLibrary.reviews[existingIndex].rating = rating;
+      sharedLibrary.reviews[existingIndex].comment = comment;
+      sharedLibrary.reviews[existingIndex].createdAt = new Date();
+    } else {
+      sharedLibrary.reviews.push({
+        movieId: id,
+        type,
+        rating,
+        comment,
+      });
+    }
+
+    await sharedLibrary.save();
+    res.json({ message: "Ortak yorum kaydedildi", reviews: sharedLibrary.reviews });
+  } catch (error) {
+    console.error("Ortak yorum hatası:", error);
+    res.status(500).json({ message: "Yorum kaydedilemedi" });
+  }
+});
+
+// ✅ FİLM DETAYLARI VE YORUMLARI GETİR
+app.get("/api/reviews/:type/:id", authMiddleware, async (req, res) => {
+  const { type, id } = req.params;
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId);
+    const userReview = await Review.findOne({ userId, movieId: id, type });
+    let partnerReview = null;
+    let jointReview = null;
+
+    let partner = null;
+    if (user.partner) {
+      partner = await User.findById(user.partner);
+      if (partner) {
+        partnerReview = await Review.findOne({
+          userId: partner._id,
+          movieId: id,
+          type,
+        });
+      }
+
+      const sharedLibrary = await SharedLibrary.findOne({
+        users: { $all: [userId, user.partner] },
+      });
+      if (sharedLibrary) {
+        jointReview = sharedLibrary.reviews.find(
+          r => r.movieId === id && r.type === type
+        );
+      }
+    }
+
+    // İzleme durumlarını belirle
+    const watchedStatus = {
+      user: user.library.watched.some((m) => m.id.toString() === id),
+      partner: partner
+        ? partner.library.watched.some((m) => m.id.toString() === id)
+        : false,
+      together: user.library.watched.some(
+        (m) => m.id.toString() === id && m.watchedTogether
+      ),
+    };
+
+    res.json({
+      userReview: userReview || null,
+      partnerReview: partnerReview || null,
+      jointReview: jointReview || null,
+      watchedStatus,
+    });
+  } catch (error) {
+    console.error("Review fetch error:", error);
+    res.status(500).json({ message: "Veri alınamadı" });
+  }
+});
+
 app.put("/api/notifications/:id/read", authMiddleware, async (req, res) => {
   const { id } = req.params;
 

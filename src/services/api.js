@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://srmdb.onrender.com",
+  baseURL:
+    process.env.REACT_APP_API_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "https://srmdb.onrender.com"
+      : "http://localhost:5000"),
   withCredentials: true, // Cookie'leri gönder
   timeout: 15000,
   headers: {
@@ -27,6 +31,12 @@ API.interceptors.request.use(
       config.timeout = 10000;
     }
 
+    // Token'ı header'a ekle (Cookie sorunu için yedek)
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => {
@@ -40,7 +50,8 @@ API.interceptors.response.use(
   (response) => {
     // Login/Register'da token'ı localStorage'a kaydet (opsiyonel)
     if (
-      response.config.url.includes("/api/auth/login") &&
+      (response.config.url.includes("/api/auth/login") ||
+        response.config.url.includes("/api/auth/register")) &&
       response.data?.token
     ) {
       console.log("💾 Token saved to localStorage");
@@ -126,9 +137,7 @@ API.interceptors.response.use(
 
 export const checkAPIHealth = async () => {
   try {
-    const response = await axios.get("https://srmdb.onrender.com/api/health", {
-      timeout: 5000,
-    });
+    const response = await API.get("/api/health");
     console.log("✅ API Health check passed:", response.data);
     return true;
   } catch (error) {

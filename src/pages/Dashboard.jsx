@@ -33,6 +33,49 @@ const Dashboard = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [contentLoading, setContentLoading] = useState(false);
+  const [sentRequests, setSentRequests] = useState([]); // Yeni state
+
+  // İstekleri çek
+  const fetchSentRequests = useCallback(async () => {
+    try {
+      const response = await API.get("/api/partner/sent-requests");
+      setSentRequests(response.data);
+    } catch (error) {
+      console.error("Giden istekler alınamadı:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showModal) {
+      fetchSentRequests();
+    }
+  }, [showModal, fetchSentRequests]);
+
+  const SentRequestsSection = () => {
+    if (sentRequests.length === 0) return null;
+
+    return (
+      <div className="sent-requests-section" style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+        <h4>📤 Gönderilen Bekleyen İstekler</h4>
+        <div className="users-grid">
+          {sentRequests.map((req) => (
+            <div key={req._id} className="search-result-item" style={{ cursor: 'default' }}>
+              <img
+                src={req.to.profilePicture || PLACEHOLDER_IMAGE}
+                alt={req.to.username}
+                className="search-user-pic"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
+              />
+              <div className="user-details">
+                <span className="username">{req.to.username}</span>
+                <span className="status-badge pending">⏳ Bekliyor</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const handleWatchedTogether = async (item) => {
     if (!user?.partner) {
@@ -249,13 +292,13 @@ const Dashboard = ({
       });
 
       if (response.status === 200) {
-        setShowModal(false);
         setPartnerInput("");
         setPartnerSearchResults([]);
         setSelectedUser(null);
         alert(
           `${selectedUser.name || selectedUser.username}'e partner daveti gönderildi!`
         );
+        fetchSentRequests(); // Listeyi güncelle
       }
     } catch (error) {
       console.error("Partner daveti gönderilirken hata:", error);
@@ -432,11 +475,9 @@ const Dashboard = ({
 
             {memoizedPartnerSearchResults.length > 0 && (
               <div className="partner-search-results">
-                <h4>
-                  👥 Bulunan Kullanıcılar ({memoizedPartnerSearchResults.length}
-                  )
-                </h4>
+                {/* ... existing search results ... */}
                 <div className="users-grid">
+                  {/* ... existing map ... */}
                   {memoizedPartnerSearchResults.map((foundUser) => (
                     <div
                       key={foundUser._id}
@@ -497,6 +538,10 @@ const Dashboard = ({
                 )}
               </div>
             )}
+
+            {/* Yeni: Gönderilen İstekler Bölümü */}
+            <SentRequestsSection />
+
             <div className="modal-footer">
               <button
                 className="cancel-btn"

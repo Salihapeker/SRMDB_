@@ -1,9 +1,10 @@
-import {
+import React, {
   useEffect,
   useState,
   useCallback,
   createContext,
   useContext,
+  Suspense, // Eklendi
 } from "react";
 import {
   BrowserRouter as Router,
@@ -13,20 +14,21 @@ import {
   useNavigate,
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-import ProfileMenu from "./components/ProfileMenu";
-import LightRays from "./components/LightRays";
 import "./components/LightRays.css";
-import API, { authHelpers } from "./services/api"; // authHelpers import eklendi
-import AIRecommendations from "./pages/AIRecommendations";
-import MovieDetail from "./pages/MovieDetail";
-import EnhancedLibrary from "./pages/EnhancedLibrary";
-import Notifications from "./pages/Notifications";
+import API, { authHelpers } from "./services/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Register"));
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Settings = React.lazy(() => import("./pages/Settings"));
+const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
+const LightRays = React.lazy(() => import("./components/LightRays"));
+const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
+const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
+const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
+const Notifications = React.lazy(() => import("./pages/Notifications"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -352,121 +354,130 @@ function AppContent() {
 
       {isAuthenticated && user && <ProfileMenu user={user} setUser={setUser} />}
 
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Login setUser={updateUser} />
-            )
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Register setUser={updateUser} />
-            )
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute user={user}>
-              <Dashboard
-                user={user}
-                addToLibrary={addToLibrary}
-                removeFromLibrary={removeFromLibrary}
-                setUser={updateUser}
-                libraryItems={libraryItems}
-                setLibraryItems={setLibraryItems}
-              />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/library"
-          element={
-            <PrivateRoute user={user}>
-              <EnhancedLibrary
-                user={user}
-                removeFromLibrary={removeFromLibrary}
-                addToLibrary={addToLibrary}
-                libraryItems={libraryItems}
-              />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PrivateRoute user={user}>
-              <Settings
-                user={user}
-                setUser={updateUser}
-                createSystemNotification={createSystemNotification}
-              />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <PrivateRoute user={user}>
-              <Notifications user={user} />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/recommendations"
-          element={
-            <PrivateRoute user={user}>
-              <AIRecommendations
-                user={user}
-                addToLibrary={addToLibrary}
-                libraryItems={libraryItems}
-              />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/:type/:id"
-          element={
-            <PrivateRoute user={user}>
-              <MovieDetail user={user} addToLibrary={addToLibrary} />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
-          }
-        />
-        <Route
-          path="*"
-          element={
-            <div className="error-404">
-              <h1>404 - Sayfa Bulunamadı</h1>
-              <p>Aradığınız sayfa mevcut değil.</p>
-              <button
-                onClick={() =>
+      <Suspense fallback={
+        <div className="loading-container">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p>Yükleniyor...</p>
+          </div>
+        </div>
+      }>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Login setUser={updateUser} />
+              )
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Register setUser={updateUser} />
+              )
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute user={user}>
+                <Dashboard
+                  user={user}
+                  addToLibrary={addToLibrary}
+                  removeFromLibrary={removeFromLibrary}
+                  setUser={updateUser}
+                  libraryItems={libraryItems}
+                  setLibraryItems={setLibraryItems}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/library"
+            element={
+              <PrivateRoute user={user}>
+                <EnhancedLibrary
+                  user={user}
+                  removeFromLibrary={removeFromLibrary}
+                  addToLibrary={addToLibrary}
+                  libraryItems={libraryItems}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute user={user}>
+                <Settings
+                  user={user}
+                  setUser={updateUser}
+                  createSystemNotification={createSystemNotification}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <PrivateRoute user={user}>
+                <Notifications user={user} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/recommendations"
+            element={
+              <PrivateRoute user={user}>
+                <AIRecommendations
+                  user={user}
+                  addToLibrary={addToLibrary}
+                  libraryItems={libraryItems}
+                />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/:type/:id"
+            element={
+              <PrivateRoute user={user}>
+                <MovieDetail user={user} addToLibrary={addToLibrary} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <div className="error-404">
+                <h1>404 - Sayfa Bulunamadı</h1>
+                <p>Aradığınız sayfa mevcut değil.</p>
+                <button
+                  onClick={() =>
                   (window.location.href = isAuthenticated
                     ? "/dashboard"
                     : "/login")
-                }
-                className="btn-primary"
-              >
-                Ana Sayfaya Dön
-              </button>
-            </div>
-          }
-        />
-      </Routes>
+                  }
+                  className="btn-primary"
+                >
+                  Ana Sayfaya Dön
+                </button>
+              </div>
+            }
+          />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
