@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../App";
 import debounce from "lodash.debounce";
@@ -28,7 +28,7 @@ function Settings({ user, setUser, createSystemNotification }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // Used in onLoad
   const [searchLoading, setSearchLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(!user);

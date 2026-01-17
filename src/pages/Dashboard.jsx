@@ -229,6 +229,7 @@ const Dashboard = ({
     [mediaType, searchQuery, year, minRating, genre]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedFetchContent = useCallback(
     debounce((page = 1) => fetchContent(page), 500),
     [fetchContent]
@@ -306,7 +307,7 @@ const Dashboard = ({
     } finally {
       setInviteLoading(false);
     }
-  }, [selectedUser]);
+  }, [selectedUser, fetchSentRequests]);
 
   const handlePageChange = useCallback(
     (newPage) => {

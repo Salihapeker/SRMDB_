@@ -105,7 +105,7 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isMobile } = useTheme();
-  const navigate = useNavigate(); // useNavigate eklendi
+  // const navigate = useNavigate(); // Removed unused variable
 
   const updateUser = useCallback((newUser) => {
     setUser(newUser);
