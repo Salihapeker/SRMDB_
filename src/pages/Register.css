@@ -37,7 +37,8 @@ body {
 .register-container {
   text-align: center;
   margin-top: 100px;
-  max-width: clamp(300px, 80vw, 450px); /* Fluid width */
+  max-width: clamp(300px, 80vw, 450px);
+  /* Fluid width */
   margin-left: auto;
   margin-right: auto;
   padding: 30px;
@@ -90,11 +91,9 @@ body {
 /* Buton */
 .register-button {
   padding: 12px 20px;
-  background: linear-gradient(
-    90deg,
-    var(--secondary-color),
-    var(--primary-color)
-  );
+  background: linear-gradient(90deg,
+      var(--secondary-color),
+      var(--primary-color));
   color: white;
   border: none;
   border-radius: 25px;
@@ -166,11 +165,11 @@ body {
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #2196f3;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 

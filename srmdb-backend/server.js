@@ -4,16 +4,25 @@ const cookieParser = require("cookie-parser");
 const compression = require("compression");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
-require("dotenv").config({ path: __dirname + "/.env" });
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Environment kontrolü ve Yükleme - EN BAŞA ALINDI
+console.log("DEBUG - CWD:", process.cwd());
+console.log("DEBUG - Attempting to load .env from:", __dirname + "/.env");
+require("dotenv").config({ path: __dirname + "/.env" });
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.JWT_SECRET || "fallback-secret-key";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 
-// Environment kontrolü
+console.log("DEBUG - GEMINI Key Loaded:", process.env.GEMINI_API_KEY ? "YES (Length: " + process.env.GEMINI_API_KEY.length + ")" : "NO");
+console.log("DEBUG - TMDB Key Loaded:", TMDB_API_KEY ? "YES" : "NO");
+
 if (!process.env.JWT_SECRET) {
   console.warn("⚠️ JWT_SECRET environment variable not set, using fallback");
 }
@@ -1847,14 +1856,99 @@ async function generateRecommendations(favorites, watched, limit = 40) {
     return [];
   }
 
-  // Favori veya izlenen film yoksa popüler filmler döndür
+  // 1. Gemini ile öneri oluştur
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      console.log("🤖 Gemini ile öneriler hazırlanıyor...");
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+      // Kullanıcı profili oluştur
+      const userProfile = {
+        favorites: favorites.slice(0, 10).map(f => f.title),
+        watched: watched.slice(0, 10).map(w => w.title),
+        recent: watched.slice(0, 5).map(w => w.title)
+      };
+
+      const prompt = `
+        Sen bir film öneri uzmanısın. Aşağıdaki kullanıcı profiline göre ${limit} adet film/dizi önerisi yap.
+        
+        Kullanıcının Favorileri: ${userProfile.favorites.join(", ")}
+        Son İzledikleri: ${userProfile.recent.join(", ")}
+        
+        Kurallar:
+        1. JSON formatında yanıt ver: [{ "original_title": "Film Adı", "reason": "Kısa ve samimi bir öneri nedeni" }]
+        2. Favorilerde veya izlenenlerde olan filmleri önerme.
+        3. Farklı türlerden ve yıllardan çeşitli öneriler yap.
+        4. "reason" kısmını Türkçe yaz ve kullanıcıya hitap et (Örn: "Sevebilirsin çünkü...").
+        5. Sadece JSON array döndür, başka metin ekleme.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.text();
+
+      // JSON temizleme (Markdown bloklarını kaldır)
+      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+      console.log("DEBUG - Gemini Response Text:", text);
+
+      let aiRecommendations = [];
+      try {
+        aiRecommendations = JSON.parse(text);
+      } catch (err) {
+        console.error("DEBUG - JSON Parse Error:", err);
+      }
+
+      console.log(`🤖 Gemini ${aiRecommendations.length} öneri sundu.`);
+
+      // 2. TMDB'den detayları çek
+      const enrichedRecommendations = [];
+
+      for (const rec of aiRecommendations) {
+        try {
+          const searchRes = await axios.get(
+            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(rec.original_title)}&language=tr-TR`
+          );
+
+          if (searchRes.data.results && searchRes.data.results.length > 0) {
+            const movie = searchRes.data.results[0]; // En iyi eşleşmeyi al
+            enrichedRecommendations.push({
+              movie: {
+                id: movie.id.toString(),
+                title: movie.title,
+                poster_path: movie.poster_path,
+                release_date: movie.release_date,
+                vote_average: movie.vote_average,
+                type: "movie",
+              },
+              reason: rec.reason
+            });
+          }
+        } catch (tmdbError) {
+          console.warn(`TMDB search failed for ${rec.original_title}`);
+        }
+      }
+
+      if (enrichedRecommendations.length > 0) {
+        return enrichedRecommendations;
+      }
+    } else {
+      console.warn("⚠️ GEMINI_API_KEY eksik, fallback sistemine geçiliyor.");
+    }
+
+  } catch (error) {
+    console.error("❌ Gemini recommendation error:", error);
+    // Hata durumunda eski yönteme (fallback) düş
+  }
+
+  // FALLBACK: Eski mantık (TMDB Similar)
+  console.log("⚠️ Fallback öneri sistemi çalışıyor...");
+
   if (!favorites.length && !watched.length) {
-    console.log("Yeterli veri yok, popüler filmler döndürülüyor");
     try {
       const response = await axios.get(
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
       );
-      // Popüler filmlerden istenen limit kadar (40) al
       return response.data.results.slice(0, limit).map((movie) => ({
         movie: {
           id: movie.id.toString(),
@@ -1875,17 +1969,13 @@ async function generateRecommendations(favorites, watched, limit = 40) {
   const favoriteIds = favorites.map((f) => f.id);
   let recommendations = [];
 
-  // Daha fazla öneri için her favori filmden daha fazla benzer film al
   for (const id of favoriteIds.slice(0, 8)) {
-    // İlk 8 favori filme bak
     try {
-      console.log(`ID ${id} için benzer filmler alınıyor`);
       const response = await axios.get(
         `https://api.themoviedb.org/3/movie/${id}/similar?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
       );
 
       if (response.data && response.data.results) {
-        // Her film için 10 benzer film al (önceki 5 yerine)
         const similarMovies = response.data.results
           .slice(0, 10)
           .map((movie) => ({
@@ -1902,11 +1992,10 @@ async function generateRecommendations(favorites, watched, limit = 40) {
         recommendations.push(...similarMovies);
       }
     } catch (error) {
-      console.error(`ID ${id} için benzer filmler alınamadı:`, error.message);
+      // ignore
     }
   }
 
-  // Tekrar eden önerileri kaldır
   const uniqueRecommendations = recommendations.reduce((unique, current) => {
     const isDuplicate = unique.some(
       (item) => item.movie.id === current.movie.id
@@ -1917,8 +2006,6 @@ async function generateRecommendations(favorites, watched, limit = 40) {
     return unique;
   }, []);
 
-  console.log(`${uniqueRecommendations.length} adet öneri oluşturuldu`);
-  // İstenen limit kadar (40) öneri döndür
   return uniqueRecommendations.slice(0, limit);
 }
 

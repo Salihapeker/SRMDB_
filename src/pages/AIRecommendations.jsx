@@ -13,7 +13,7 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
   const [activeTab, setActiveTab] = useState('personal');
 
   // Kişisel öneriler (TMDB tabanlı)
-  const fetchPersonalRecommendations = async () => {
+  const fetchPersonalRecommendations = React.useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -26,10 +26,10 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Partner önerileri
-  const fetchPartnerRecommendations = async () => {
+  const fetchPartnerRecommendations = React.useCallback(async () => {
     if (!user.partner) return;
     try {
       setLoading(true);
@@ -43,10 +43,10 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.partner]);
 
   // Ortak öneriler
-  const fetchSharedRecommendations = async () => {
+  const fetchSharedRecommendations = React.useCallback(async () => {
     if (!user.partner) return;
     try {
       setLoading(true);
@@ -60,7 +60,7 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.partner]);
 
   // Tab değişimi
   useEffect(() => {
