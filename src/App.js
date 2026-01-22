@@ -14,6 +14,7 @@ import {
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import "./components/LightRays.css";
+import "./styles/theme-red.css";
 import "./App.css";
 import API, { authHelpers } from "./services/api";
 import { ToastContainer, toast } from "react-toastify";
@@ -23,7 +24,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
+const Header = React.lazy(() => import("./components/Header/Header"));
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
@@ -339,7 +340,7 @@ function AppContent() {
 
       <LightRays
         raysOrigin="top-center"
-        raysColor="#ff7eb3"
+        raysColor="#e50914"
         raysSpeed={1}
         lightSpread={1}
         rayLength={2}
@@ -353,7 +354,20 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+      {isAuthenticated && user && (
+        <Header 
+          user={user} 
+          onLogout={async () => {
+            try {
+              await API.post("/api/auth/logout");
+            } catch (error) {
+              console.warn("Logout API error:", error);
+            }
+            authHelpers.clearAuth();
+            updateUser(null);
+          }}
+        />
+      )}
 
       <Suspense fallback={
         <div className="loading-container">

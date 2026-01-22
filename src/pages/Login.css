@@ -2,10 +2,10 @@
 
 /* Scoped variables for Login page only */
 .login-page-wrapper {
-    --login-primary: #ff7eb3;
-    --login-secondary: #4a90e2;
+    --login-primary: #e50914;
+    --login-secondary: #b20710;
     --login-text: #fff;
-    --login-bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
+    --login-bg-gradient: linear-gradient(135deg, #0a0a0a, #141414);
     --login-error: #ff4d4d;
     --login-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 
@@ -24,8 +24,7 @@
 /* Dark mode specific for login wrapper */
 [data-theme='dark'] .login-page-wrapper {
     --login-text: #eee;
-    --login-bg-gradient: linear-gradient(135deg, #0f0c1c, #2a2a3a);
-    /* Daha koyu arka plan */
+    --login-bg-gradient: linear-gradient(135deg, #0a0a0a, #141414);
 }
 
 .login-page-wrapper * {
@@ -44,7 +43,7 @@
     border-radius: 15px;
     box-shadow:
         var(--login-shadow),
-        0 0 10px rgba(74, 144, 226, 0.5);
+        0 0 30px rgba(229, 9, 20, 0.5);
     backdrop-filter: blur(5px);
 }
 
@@ -83,7 +82,7 @@
 .login-input:focus {
     outline: none;
     border-color: var(--login-primary);
-    box-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
+    box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 /* Buton */
@@ -164,7 +163,7 @@
 }
 
 input:checked+.slider {
-    background-color: #2196f3;
+    background-color: #e50914;
 }
 
 input:checked+.slider:before {

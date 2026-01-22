@@ -107,7 +107,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #ff7eb3, #5b2ecc);
+  background: linear-gradient(90deg, #e50914, #b20710);
   transition: var(--transition-normal);
   border-radius: 44px;
   display: flex;
@@ -172,7 +172,7 @@ input:checked + .slider:before {
 
 .profile-pic:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px var(--accent-color);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 .profile-pic-placeholder {
@@ -215,7 +215,7 @@ input:checked + .slider:before {
 }
 
 .profile-pic-label:hover {
-  background: #3f6ad8;
+  background: #b20710;
   transform: scale(1.05);
 }
 
@@ -295,7 +295,7 @@ input:checked + .slider:before {
 .settings-form input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.3);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
   transform: scale(1.02);
 }
 
@@ -527,7 +527,7 @@ input:checked + .slider:before {
 
 .search-result-item.selected {
   border-color: var(--primary-color);
-  background: rgba(255, 126, 179, 0.1);
+  background: rgba(229, 9, 20, 0.1);
 }
 
 .user-info {
@@ -1000,7 +1000,7 @@ input:checked + .slider:before {
   cursor: pointer;
 }
 .view-profile-btn {
-  background-color: #4f46e5; /* Mor ton */
+  background-color: #e50914;
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -1011,11 +1011,11 @@ input:checked + .slider:before {
   transition: all 0.25s ease;
   display: flex;
   align-items: center;
-  gap: 10px; /* emoji ile yazı arasına boşluk */
+  gap: 10px;
 }
 
 .view-profile-btn:hover {
-  background-color: #4338ca; /* daha koyu mor */
+  background-color: #b20710;
   transform: translateY(-2px);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -1032,7 +1032,7 @@ input:checked + .slider:before {
 }
 
 .invite-from-profile-btn {
-  background-color: #ec4899; /* canlı pembe */
+  background-color: #e50914;
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -1047,7 +1047,7 @@ input:checked + .slider:before {
 }
 
 .invite-from-profile-btn:hover {
-  background-color: #db2777; /* daha koyu pembe */
+  background-color: #b20710;
   transform: translateY(-2px);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -1273,7 +1273,7 @@ input:checked + .slider:before {
 .withdraw-invite-btn {
   margin-left: 10px;
   padding: 5px 10px;
-  background-color: #ff7eb3;
+  background-color: #e50914;
   color: white;
   border: none;
   border-radius: 4px;
@@ -1282,7 +1282,7 @@ input:checked + .slider:before {
 }
 
 .withdraw-invite-btn:hover {
-  background-color: #c82333;
+  background-color: #b20710;
 }
 
 .withdraw-invite-btn:disabled {

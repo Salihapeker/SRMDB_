@@ -178,9 +178,9 @@
 }
 
 .btn-small:nth-child(1) { background-color: var(--primary-color); }
-.btn-small:nth-child(1):hover { background-color: #e94e4e; }
+.btn-small:nth-child(1):hover { background-color: #b20710; }
 .btn-small:nth-child(2) { background-color: var(--secondary-color); }
-.btn-small:nth-child(2):hover { background-color: #3f1fa3; }
+.btn-small:nth-child(2):hover { background-color: #8a0610; }
 
 .loading-state {
   text-align: center;
@@ -236,7 +236,7 @@
 }
 
 .cta-btn:hover {
-  background-color: #3f1fa3;
+  background-color: #b20710;
   transform: scale(1.05);
 }
 
