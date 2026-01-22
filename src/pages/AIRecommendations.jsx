@@ -221,6 +221,11 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
                 <span>✨</span>
                 <strong>Gemini AI ile Güçlendirildi</strong>
               </div>
+            ) : source === 'groq' ? (
+              <div className="source-badge groq" style={{ background: 'linear-gradient(90deg, #f5af19 0%, #f12711 100%)', padding: '8px 16px', borderRadius: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(241, 39, 17, 0.4)' }}>
+                <span>⚡</span>
+                <strong>Groq AI ile Güçlendirildi</strong>
+              </div>
             ) : (
               <div className="source-badge fallback" style={{ background: '#ff9800', padding: '8px 16px', borderRadius: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255, 152, 0, 0.4)', position: 'relative' }} title="AI kotası dolduğu için standart algoritma kullanılıyor.">
                 <span>⚠️</span>
