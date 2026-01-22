@@ -43,7 +43,10 @@
 }
 
 .library-header h1 {
-  color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: clamp(2rem, 5vw, 2.8rem);
   margin-bottom: 10px;
 }
