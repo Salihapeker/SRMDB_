@@ -23,7 +23,6 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
