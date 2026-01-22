@@ -4,15 +4,17 @@ import React, {
   useCallback,
   createContext,
   useContext,
-  Suspense, // Eklendi
+  Suspense,
 } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
+import Header from "./components/Header/Header";
 import "./components/LightRays.css";
 import "./App.css";
 import API, { authHelpers } from "./services/api";
@@ -23,7 +25,6 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
@@ -96,6 +97,7 @@ const ThemeProvider = ({ children }) => {
 };
 
 function AppContent() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [libraryItems, setLibraryItems] = useState({
     watched: [],
@@ -106,12 +108,30 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isMobile } = useTheme();
-  // const navigate = useNavigate(); // Removed unused variable
 
   const updateUser = useCallback((newUser) => {
     setUser(newUser);
     setIsAuthenticated(!!newUser);
   }, []);
+
+  const handleLogout = useCallback(() => {
+    console.log("⚡ Logging out...");
+    
+    // 1. API call in background
+    API.post("/api/auth/logout").catch((error) => {
+      console.warn("⚠️ Logout error (non-critical):", error);
+    });
+
+    // 2. Clear local auth data
+    authHelpers.clearAuth();
+
+    // 3. Reset state
+    setUser(null);
+    setIsAuthenticated(false);
+
+    // 4. Navigate to login
+    navigate("/login", { replace: true });
+  }, [navigate]);
 
   const createSystemNotification = useCallback(
     async (type, message, relatedItem = null) => {
@@ -353,7 +373,7 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+      {isAuthenticated && user && <Header user={user} onLogout={handleLogout} />}
 
       <Suspense fallback={
         <div className="loading-container">
@@ -363,16 +383,17 @@ function AppContent() {
           </div>
         </div>
       }>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Login setUser={updateUser} />
-              )
-            }
+        <div className="page-content">
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Login setUser={updateUser} />
+                )
+              }
           />
           <Route
             path="/register"
@@ -486,6 +507,7 @@ function AppContent() {
             }
           />
         </Routes>
+        </div>
       </Suspense>
     </main>
   );

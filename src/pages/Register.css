@@ -1,183 +1,193 @@
-/* Modernleştirme: Variables, fluid width, improved focus/hover, dark mode */
+/* ===== REGISTER PAGE - SINEMATIK NEON TEMA ===== */
 
-/* Root variables */
-:root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #4a90e2;
-  --bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
-  --text-color: #fff;
-  --error-color: #ff4d4d;
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+.register-page-wrapper {
+    /* Layout */
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    
+    /* Background already handled by App.css */
+    background: transparent;
+    position: relative;
+    padding: 20px;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-color: #eee;
-  }
+.register-page-wrapper * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-  width: 100%;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
-  font-family: "Segoe UI", "Roboto", sans-serif;
-  color: var(--text-color);
-}
-
-/* Register genel yerleşim */
+/* Register Container - Glassmorphism */
 .register-container {
-  text-align: center;
-  margin-top: 100px;
-  max-width: clamp(300px, 80vw, 450px);
-  /* Fluid width */
-  margin-left: auto;
-  margin-right: auto;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  box-shadow:
-    var(--shadow),
-    0 0 10px rgba(74, 144, 226, 0.5);
-  backdrop-filter: blur(5px);
+    text-align: center;
+    width: 100%;
+    max-width: clamp(320px, 90vw, 500px);
+    padding: 40px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--border-glass);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl), var(--glow-purple);
+    transition: all var(--transition-normal);
 }
 
-/* Başlık */
+.register-container:hover {
+    border-color: rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(102, 126, 234, 0.3);
+}
+
+/* Title with Gradient */
 .register-container h1 {
-  font-size: clamp(1.5rem, 5vw, 28px);
-  color: var(--primary-color);
-  margin-bottom: 25px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-/* Form düzeni */
+/* Form Layout */
 .register-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
 }
 
-/* Input alanları */
+/* Input Fields - Neon Style */
 .register-input {
-  padding: 12px;
-  width: 100%;
-  max-width: 300px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-color);
-  font-size: 16px;
-  transition:
-    border-color 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+    padding: 14px 18px;
+    width: 100%;
+    max-width: 400px;
+    border: var(--border-glass);
+    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: inherit;
+    transition: all var(--transition-normal);
+}
+
+.register-input::placeholder {
+    color: var(--text-muted);
 }
 
 .register-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
+    outline: none;
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    background: rgba(255, 255, 255, 0.08);
 }
 
-/* Buton */
+/* Button - Neon Gradient */
 .register-button {
-  padding: 12px 20px;
-  background: linear-gradient(90deg,
-      var(--secondary-color),
-      var(--primary-color));
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 300px;
-  font-size: 16px;
-  font-weight: 500;
-  transition:
-    transform 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
+    padding: 14px 32px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    text-transform: uppercase;
 }
 
 .register-button:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
 }
 
-.register-button:focus-visible {
-  outline: 2px solid var(--primary-color);
+.register-button:active {
+    transform: translateY(0);
 }
 
-/* Hata mesajları */
+.register-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Error Messages */
 .error-message {
-  color: var(--error-color);
-  margin-top: 15px;
-  font-size: 14px;
-  font-weight: 500;
+    color: var(--error);
+    background: rgba(255, 61, 113, 0.1);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 61, 113, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    max-width: 400px;
 }
 
-.theme-toggle {
-  margin-top: 15px;
+/* Success Messages */
+.success-message {
+    color: var(--success);
+    background: rgba(0, 214, 143, 0.1);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 214, 143, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    max-width: 400px;
 }
 
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
+/* Links */
+.register-link {
+    color: var(--primary-purple);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
 }
 
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.register-link:hover {
+    color: var(--primary-pink);
+    text-decoration: underline;
 }
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
+/* Login Link */
+.login-link-container {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: var(--border-glass);
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
+.login-link-container a {
+    color: var(--primary-purple);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition-fast);
 }
 
-input:checked+.slider {
-  background-color: #2196f3;
+.login-link-container a:hover {
+    color: var(--primary-pink);
 }
 
-input:checked+.slider:before {
-  transform: translateX(26px);
-}
-
-.slider-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 12px;
+/* Responsive */
+@media (max-width: 768px) {
+    .register-container {
+        padding: 30px 20px;
+    }
+    
+    .register-input,
+    .register-button {
+        max-width: 100%;
+    }
 }
