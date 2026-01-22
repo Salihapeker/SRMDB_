@@ -5,34 +5,32 @@
   margin: 0 auto;
   padding: var(--spacing-xl);
   min-height: 100vh;
-  color: var(--text-color);
+  color: var(--text-primary);
   background: transparent;
-  /* Arkaplan body'den gelir */
   animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Geri Butonu */
 .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  border: var(--border-glass);
   padding: 10px 20px;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   margin-bottom: 20px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
+  transition: all var(--transition-normal);
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .back-btn:hover {
-  background: var(--primary-color);
+  background: var(--gradient-primary);
   color: white;
   transform: translateX(-5px);
-  box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.4);
+  box-shadow: var(--glow-purple);
 }
 
 /* Header Layout */
@@ -41,11 +39,11 @@
   grid-template-columns: 350px 1fr;
   gap: 40px;
   background: var(--bg-card);
+  backdrop-filter: blur(20px);
   padding: 30px;
-  border-radius: 20px;
-  box-shadow: var(--shadow-heavy);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-glass);
   margin-bottom: 30px;
 }
 
@@ -152,10 +150,10 @@
 .info-section h1 {
   font-size: 2.5rem;
   margin-bottom: 10px;
-  background: linear-gradient(90deg, var(--text-color), var(--primary-color));
-  background-clip: text;
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.2;
 }
 
@@ -232,46 +230,50 @@
 .library-actions button {
   padding: 12px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   font-size: 1rem;
   color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-watchlist {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: var(--gradient-gold);
 }
 
 .btn-favorite {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: var(--gradient-accent);
 }
 
 .btn-dislike {
-  background: linear-gradient(135deg, #6b7280, #374151);
+  background: var(--bg-glass);
+  border: var(--border-glass);
 }
 
 .library-actions button:hover {
   transform: translateY(-3px);
-  filter: brightness(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--glow-purple);
 }
 
 /* İzlenme Durumu Bölümü */
 .watched-actions {
   background: var(--bg-card);
+  backdrop-filter: blur(20px);
   padding: 30px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  border: var(--border-glass);
   margin-bottom: 30px;
   text-align: center;
 }
 
 .watched-actions h3 {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 20px;
-  color: var(--primary-color);
 }
 
 .watched-buttons {
@@ -317,9 +319,10 @@
 /* Değerlendirme Bölümü */
 .review-section {
   background: var(--bg-card);
+  backdrop-filter: blur(20px);
   padding: 30px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  border: var(--border-glass);
   margin-bottom: 30px;
 }
 
@@ -391,19 +394,20 @@ textarea:focus {
 .save-review-btn {
   width: 100%;
   padding: 15px;
-  background: var(--primary-color);
+  background: var(--gradient-primary);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
+  box-shadow: var(--glow-purple);
 }
 
 .save-review-btn:hover {
-  filter: brightness(1.1);
   transform: translateY(-2px);
+  box-shadow: var(--glow-purple), var(--shadow-lg);
 }
 
 /* Partner ve Ortak Yorumlar */

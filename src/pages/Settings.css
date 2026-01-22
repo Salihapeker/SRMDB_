@@ -4,11 +4,12 @@
   max-width: 700px;
   margin: 40px auto;
   padding: var(--spacing-xl);
-  background: var(--bg-color);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-heavy);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  border: var(--border-glass);
 }
 
 @media (max-width: 768px) {
@@ -27,7 +28,10 @@
 }
 
 .settings-container h2 {
-  color: var(--primary-color);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: var(--font-3xl);
   margin-bottom: var(--spacing-sm);
   font-weight: 700;
@@ -67,16 +71,28 @@
 }
 
 /* Theme section */
-.theme-section {
+.theme-section,
+.profile-pic-section,
+.settings-form,
+.privacy-section,
+.partner-section {
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  border: var(--border-glass);
 }
 
-.theme-section h3 {
-  color: var(--accent-color);
+.theme-section h3,
+.profile-pic-section h3,
+.settings-form h3,
+.privacy-section h3,
+.partner-section h3 {
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: var(--font-xl);
   margin-bottom: var(--spacing-md);
   font-weight: 700;
@@ -107,7 +123,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #ff7eb3, #5b2ecc);
+  background: var(--gradient-primary);
   transition: var(--transition-normal);
   border-radius: 44px;
   display: flex;
@@ -131,6 +147,7 @@
   background-color: white;
   transition: var(--transition-normal);
   border-radius: 50%;
+  box-shadow: var(--shadow-sm);
 }
 
 input:checked + .slider {
@@ -201,9 +218,9 @@ input:checked + .slider:before {
   display: inline-block;
   margin-top: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--accent-color);
+  background: var(--gradient-secondary);
   color: white;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition-normal);
   font-size: var(--font-sm);
@@ -212,11 +229,12 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-md);
 }
 
 .profile-pic-label:hover {
-  background: #3f6ad8;
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--glow-cyan);
 }
 
 .profile-pic-input {
@@ -278,10 +296,11 @@ input:checked + .slider:before {
 
 .settings-form input {
   padding: var(--spacing-sm);
-  border: 2px solid var(--border-color);
+  border: var(--border-glass);
   border-radius: var(--radius-md);
-  background: var(--bg-card);
-  color: var(--text-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
   font-size: var(--font-base);
   font-weight: 500;
   transition: all var(--transition-normal);
@@ -294,9 +313,9 @@ input:checked + .slider:before {
 
 .settings-form input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.3);
-  transform: scale(1.02);
+  border-color: var(--primary-purple);
+  box-shadow: var(--glow-purple);
+  background: var(--bg-card);
 }
 
 /* Privacy settings */
@@ -337,22 +356,22 @@ input:checked + .slider:before {
 /* Save button */
 .save-button {
   padding: var(--spacing-sm) var(--spacing-xl);
-  background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+  background: var(--gradient-primary);
   color: white;
   border: none;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-size: var(--font-lg);
   font-weight: 600;
   transition: all var(--transition-normal);
   min-height: 50px;
   margin: var(--spacing-lg) 0;
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--glow-purple);
 }
 
 .save-button:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-heavy);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--glow-purple), var(--shadow-xl);
 }
 
 /* Partner section */

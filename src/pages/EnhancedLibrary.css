@@ -2,13 +2,6 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
-  --bg-color: rgba(255, 255, 255, 0.05);
-  
-  --text-color: white;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   --font-size-heading: clamp(1.2rem, 3vw, 1.5rem);
 }
 
@@ -28,10 +21,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-color);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  color: var(--text-color);
+  background-color: transparent;
+  border-radius: var(--radius-xl);
+  color: var(--text-primary);
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -42,7 +34,10 @@
 }
 
 .library-header h1 {
-  color: var(--primary-color);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: clamp(2rem, 5vw, 2.8rem);
   margin-bottom: 10px;
 }
@@ -61,18 +56,21 @@
 }
 
 .toggle-btn {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
   padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
+  border: var(--border-glass);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out, transform 0.2s;
+  transition: all var(--transition-normal);
 }
 
 .toggle-btn.active, .toggle-btn:hover {
-  background-color: var(--secondary-color);
-  transform: scale(1.05);
+  background: var(--gradient-primary);
+  border-color: var(--primary-purple);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-purple);
 }
 
 .toggle-btn:focus-visible {
@@ -87,44 +85,36 @@
 
 .library-section h3 {
   font-size: var(--font-size-heading);
-  color: var(--accent-color);
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 15px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
   padding-bottom: 5px;
   text-align: center;
 }
 .comment-preview {
-  color: var(--text-color); /* Dinamik metin rengi */
-}
-/* Film grid'i - Responsive */
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-  justify-content: center;
+  color: var(--text-secondary);
 }
 
-@media (max-width: 768px) {
-  .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-/* Gelişmiş film kartı */
 .enhanced-movie-card {
-  background-color: var(--bg-card); /* Dinamik arka plan */
-  border-radius: 12px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
   padding: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out, box-shadow 0.3s, background-color var(--transition-normal);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
   text-align: center;
-  color: #757575; /* Dinamik metin rengi */
+  color: var(--text-primary);
   cursor: pointer;
+  border: var(--border-glass);
 }
 
 .enhanced-movie-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: var(--glow-purple), var(--shadow-xl);
+  border-color: var(--primary-purple);
 }
 
 .card-poster {
@@ -204,25 +194,22 @@
 }
 
 .card-actions button {
-  background-color: #e74c3c;
+  background: var(--gradient-accent);
   color: white;
   border: none;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: all var(--transition-normal);
 }
 
 .card-actions .mark-watched-btn {
-  background-color: var(--accent-color);
+  background: var(--gradient-secondary);
 }
 
 .card-actions button:hover {
-  background-color: #c0392b;
-}
-
-.card-actions .mark-watched-btn:hover {
-  background-color: #3f6ad8;
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: var(--glow-pink);
 }
 
 /* İstatistikler - Responsive */
@@ -237,25 +224,32 @@
 }
 
 .stat-card {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
   padding: 15px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   text-align: center;
-  transition: transform 0.2s;
+  transition: all var(--transition-normal);
+  border: var(--border-glass);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
+  box-shadow: var(--glow-cyan);
+  border-color: var(--accent-cyan);
 }
 
 .stat-number {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: #ccc;
+  color: var(--text-secondary);
 }
 
 /* Uyumluluk analizi */
@@ -318,18 +312,19 @@
 }
 
 .cta-btn {
-  background-color: var(--secondary-color);
+  background: var(--gradient-primary);
   color: white;
   padding: 10px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out, transform 0.2s;
+  transition: all var(--transition-normal);
+  box-shadow: var(--glow-purple);
 }
 
 .cta-btn:hover {
-  background-color: #3f1fa3;
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--glow-purple), var(--shadow-lg);
 }
 
 /* Hızlı aksiyonlar */
@@ -341,17 +336,19 @@
 }
 
 .action-btn {
-  background-color: #ff6363;
+  background: var(--gradient-accent);
   color: white;
   padding: 10px 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
 }
 
 .action-btn:hover {
-  background-color: #e94e4e;
+  transform: translateY(-2px);
+  box-shadow: var(--glow-pink);
 }
 
 .rating-badge.average-rating {
