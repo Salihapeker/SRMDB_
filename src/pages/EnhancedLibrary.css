@@ -2,10 +2,10 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
-  --bg-color: rgba(255, 255, 255, 0.05);
+  --primary-color: #e50914;
+  --secondary-color: #b20710;
+  --accent-color: #e50914;
+  --bg-color: rgba(10, 10, 10, 0.95);
   
   --text-color: white;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -172,7 +172,7 @@
 
 .watched-user { background-color: var(--accent-color); }
 .watched-partner { background-color: var(--primary-color); }
-.watched-together { background-color: #e94e4e; }
+.watched-together { background-color: #e50914; }
 
 /* Kart bilgileri */
 .card-info h4 {
@@ -222,7 +222,7 @@
 }
 
 .card-actions .mark-watched-btn:hover {
-  background-color: #3f6ad8;
+  background-color: #b20710;
 }
 
 /* İstatistikler - Responsive */
@@ -328,7 +328,7 @@
 }
 
 .cta-btn:hover {
-  background-color: #3f1fa3;
+  background-color: #b20710;
   transform: scale(1.05);
 }
 
@@ -411,7 +411,7 @@
 .action-btn {
   padding: 10px 15px;
   border-radius: 20px;
-  background: linear-gradient(90deg, #4a90e2, #ff7eb3);
+  background: linear-gradient(90deg, #e50914, #b20710);
   color: white;
   border: none;
   cursor: pointer;

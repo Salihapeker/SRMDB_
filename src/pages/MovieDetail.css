@@ -32,7 +32,7 @@
   background: var(--primary-color);
   color: white;
   transform: translateX(-5px);
-  box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.4);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 /* Header Layout */
@@ -83,7 +83,7 @@
   width: 100%;
   margin-top: 15px;
   padding: 12px;
-  background: #ff0000;
+  background: #e50914;
   color: white;
   border: none;
   border-radius: 12px;
@@ -95,13 +95,13 @@
   justify-content: center;
   gap: 10px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 .trailer-btn:hover {
-  background: #cc0000;
+  background: #b20710;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 0, 0, 0.4);
+  box-shadow: 0 0 40px rgba(229, 9, 20, 0.7);
 }
 
 .poster-placeholder {
@@ -144,7 +144,7 @@
 }
 
 .watched-badge.together {
-  background: linear-gradient(45deg, #e91e63, #f06292);
+  background: linear-gradient(45deg, #e50914, #b20710);
   animation: pulse 2s infinite;
 }
 
@@ -242,11 +242,11 @@
 }
 
 .btn-watchlist {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #e50914, #b20710);
 }
 
 .btn-favorite {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: linear-gradient(135deg, #e50914, #b20710);
 }
 
 .btn-dislike {
@@ -301,7 +301,7 @@
   background: var(--primary-color);
   border-color: var(--primary-color);
   color: white;
-  box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 .remove-watched {
@@ -385,7 +385,7 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 .save-review-btn {
@@ -430,7 +430,7 @@ textarea:focus {
 
 /* Uyumluluk Skoru */
 .compatibility-score {
-  background: linear-gradient(135deg, #1f1c2c, #302b63);
+  background: linear-gradient(135deg, #0a0a0a, #141414);
   padding: 25px;
   border-radius: 20px;
   text-align: center;
@@ -452,24 +452,24 @@ textarea:focus {
 
 .meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  background: linear-gradient(90deg, #e50914, #b20710);
   border-radius: 10px;
   transition: width 1s ease-out;
-  box-shadow: 0 0 10px rgba(255, 65, 108, 0.5);
+  box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
 }
 
 /* Animations */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7);
   }
 
   70% {
-    box-shadow: 0 0 0 10px rgba(233, 30, 99, 0);
+    box-shadow: 0 0 0 10px rgba(229, 9, 20, 0);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(233, 30, 99, 0);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
   }
 }
 

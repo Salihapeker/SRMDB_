@@ -117,7 +117,7 @@
 .notification-card.unread {
   border-left: 4px solid var(--primary-color);
   background: linear-gradient(90deg, 
-    rgba(255, 126, 179, 0.05) 0%, 
+    rgba(229, 9, 20, 0.05) 0%, 
     var(--bg-card) 50%
   );
 }
@@ -141,7 +141,7 @@
 
 .notification-card.partner.unread {
   background: linear-gradient(90deg, 
-    rgba(74, 144, 226, 0.05) 0%, 
+    rgba(229, 9, 20, 0.05) 0%, 
     var(--bg-card) 50%
   );
 }
@@ -320,7 +320,7 @@
 }
 
 .action-btn.mark-read:hover {
-  background: #3f6ad8;
+  background: #b20710;
   transform: scale(1.05);
 }
 
@@ -429,12 +429,12 @@
 /* Pulse animation for unread notifications */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 126, 179, 0.7);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 126, 179, 0);
+    box-shadow: 0 0 0 10px rgba(229, 9, 20, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 126, 179, 0);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
   }
 }
