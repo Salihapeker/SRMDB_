@@ -1,43 +1,68 @@
 /* src/App.css */
 :root {
-  /* Renk Paleti - Light Mode */
-  --bg-primary: #f4f4f9;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #121212;
-  --text-secondary: #555555;
-  --accent-color: #6c5ce7;
-  --accent-hover: #5a4ad1;
-  --border-color: #e0e0e0;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-  /* Özel bileşenler */
-  --header-bg: #ffffff;
-  --sidebar-bg: #ffffff;
-  --input-bg: #f9f9f9;
-  --modal-bg: #ffffff;
+  /* Primary Colors - Golden/Orange Theme */
+  --primary-gold: #F5A623;
+  --primary-orange: #FF9500;
+  --primary-dark-orange: #E8940C;
+  --accent-pink: #E91E8C;
+  
+  /* Background Colors */
+  --bg-primary: #1A1A2E;
+  --bg-secondary: #16213E;
+  --bg-card: #2D2D44;
+  --bg-card-hover: #3D3D54;
+  
+  /* Text Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --text-muted: #808080;
+  
+  /* Gradients */
+  --gradient-gold: linear-gradient(90deg, #F5A623 0%, #FF9500 100%);
+  --gradient-accent: linear-gradient(90deg, #FF9500 0%, #E91E8C 100%);
+  --gradient-bg: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+  
+  /* Legacy support */
+  --accent-color: #F5A623;
+  --accent-hover: #E8940C;
+  --border-color: rgba(245, 166, 35, 0.2);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --header-bg: #16213E;
+  --sidebar-bg: #16213E;
+  --input-bg: #2D2D44;
+  --modal-bg: #2D2D44;
 }
 
 [data-theme='dark'] {
-  /* Renk Paleti - Dark Mode */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #252525;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --accent-color: #bb86fc;
-  --accent-hover: #9f66e3;
-  --border-color: #333333;
+  /* Dark mode uses the same golden/orange theme */
+  --primary-gold: #F5A623;
+  --primary-orange: #FF9500;
+  --primary-dark-orange: #E8940C;
+  --accent-pink: #E91E8C;
+  
+  --bg-primary: #1A1A2E;
+  --bg-secondary: #16213E;
+  --bg-card: #2D2D44;
+  --bg-card-hover: #3D3D54;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --text-muted: #808080;
+  
+  --gradient-gold: linear-gradient(90deg, #F5A623 0%, #FF9500 100%);
+  --gradient-accent: linear-gradient(90deg, #FF9500 0%, #E91E8C 100%);
+  --gradient-bg: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+  
+  --accent-color: #F5A623;
+  --accent-hover: #E8940C;
+  --border-color: rgba(245, 166, 35, 0.2);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
-
-  /* Özel bileşenler */
-  --header-bg: #1f1c2c;
-  /* Eski header rengi */
-  --sidebar-bg: #1e1e1e;
-  --input-bg: #2c2c2c;
-  --modal-bg: #252525;
+  --header-bg: #16213E;
+  --sidebar-bg: #16213E;
+  --input-bg: #2D2D44;
+  --modal-bg: #2D2D44;
 }
 
 body {
@@ -62,10 +87,10 @@ body {
 
 /* Header */
 header {
-  background-color: var(--header-bg);
+  background: linear-gradient(135deg, #16213E 0%, #1A1A2E 100%);
   color: var(--text-primary);
   padding: 20px;
-  border-bottom: 3px solid var(--accent-color);
+  border-bottom: 3px solid var(--primary-gold);
   position: relative;
   z-index: 10;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -97,14 +122,14 @@ nav ul li {
 }
 
 nav ul li a {
-  color: var(--accent-color);
+  color: var(--primary-gold);
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.3s ease;
 }
 
 nav ul li a:hover {
-  color: var(--accent-hover);
+  color: var(--primary-orange);
 }
 
 /* Genel içerik stilleri */
@@ -117,28 +142,56 @@ nav ul li a:hover {
 
 /* Kartlar ve Konteynerler için genel sınıflar */
 .card {
-  background-color: var(--bg-card);
+  background: var(--bg-card);
   color: var(--text-primary);
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 20px;
   box-shadow: var(--shadow-sm);
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(245, 166, 35, 0.1);
+}
+
+.card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(245, 166, 35, 0.3);
 }
 
 /* Butonlar */
 button {
-  background-color: var(--accent-color);
-  color: white;
+  background: var(--gradient-gold);
+  color: var(--bg-primary);
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 25px;
   cursor: pointer;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background-color: var(--accent-hover);
+  background: var(--gradient-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+}
+
+.btn-primary {
+  background: var(--gradient-gold);
+  color: var(--bg-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--gradient-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
 }
 
 /* Form Elemanları */
@@ -195,10 +248,31 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
+  background: var(--primary-gold);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-hover);
+  background: var(--primary-orange);
+}
+
+/* Page Title Styles */
+.page-title {
+  font-size: 36px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #F5A623 0%, #FF9500 50%, #E91E8C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 24px;
+  color: var(--primary-gold);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
