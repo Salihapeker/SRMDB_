@@ -4,15 +4,19 @@ import React, {
   useCallback,
   createContext,
   useContext,
-  Suspense, // Eklendi
+  Suspense,
 } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import PrivateRoute from "./components/PrivateRoute";
+import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
 import "./components/LightRays.css";
 import "./App.css";
 import API, { authHelpers } from "./services/api";
@@ -30,6 +34,8 @@ const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
 const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
 const PersonDetail = React.lazy(() => import("./pages/PersonDetail"));
+const Badges = React.lazy(() => import("./pages/Badges"));
+const Profile = React.lazy(() => import("./pages/Profile"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -310,6 +316,25 @@ function AppContent() {
     [createSystemNotification, checkUserSession]
   );
 
+  const handleLogout = useCallback(async () => {
+    try {
+      await API.post('/api/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      authHelpers.clearAuth();
+      setUser(null);
+      setIsAuthenticated(false);
+      setLibraryItems({
+        watched: [],
+        watchlist: [],
+        favorites: [],
+        disliked: [],
+      });
+      window.location.href = '/login';
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -353,7 +378,12 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+      {isAuthenticated && user && (
+        <>
+          <Header user={user} onLogout={handleLogout} />
+          <ProfileMenu user={user} setUser={updateUser} />
+        </>
+      )}
 
       <Suspense fallback={
         <div className="loading-container">
@@ -425,6 +455,22 @@ function AppContent() {
             }
           />
           <Route
+            path="/profile"
+            element={
+              <PrivateRoute user={user}>
+                <Profile user={user} setUser={updateUser} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/badges"
+            element={
+              <PrivateRoute user={user}>
+                <Badges />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/notifications"
             element={
               <PrivateRoute user={user}>
@@ -487,6 +533,8 @@ function AppContent() {
           />
         </Routes>
       </Suspense>
+
+      {isAuthenticated && <Footer />}
     </main>
   );
 }
