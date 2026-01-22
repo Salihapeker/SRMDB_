@@ -2,12 +2,14 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #4a90e2;
-  --bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
+  --primary-color: #667eea;
+  --secondary-color: #f953c6;
+  --accent-color: #00d4ff;
+  --bg-gradient: linear-gradient(135deg, #0a0a1a, #12121f);
   --text-color: #fff;
   --error-color: #ff4d4d;
   --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  --glow-primary: 0 0 30px rgba(102, 126, 234, 0.4);
 }
 
 /* Dark mode */
@@ -42,12 +44,13 @@ body {
   margin-left: auto;
   margin-right: auto;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 40, 0.85);
   border-radius: 15px;
   box-shadow:
     var(--shadow),
-    0 0 10px rgba(74, 144, 226, 0.5);
-  backdrop-filter: blur(5px);
+    0 0 40px rgba(102, 126, 234, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Başlık */
@@ -85,15 +88,15 @@ body {
 .register-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
 }
 
 /* Buton */
 .register-button {
   padding: 12px 20px;
-  background: linear-gradient(90deg,
-      var(--secondary-color),
-      var(--primary-color));
+  background: linear-gradient(135deg,
+      var(--primary-color),
+      var(--secondary-color));
   color: white;
   border: none;
   border-radius: 25px;
@@ -104,12 +107,14 @@ body {
   font-weight: 500;
   transition:
     transform 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
+    opacity 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
 }
 
 .register-button:hover {
   transform: scale(1.05);
   opacity: 0.9;
+  box-shadow: 0 0 25px rgba(102, 126, 234, 0.6);
 }
 
 .register-button:focus-visible {

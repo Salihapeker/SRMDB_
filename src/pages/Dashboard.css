@@ -33,12 +33,12 @@
 
 /* -------- LIGHT THEME -------- */
 [data-theme="light"] {
-  --primary-color: #8b5cf6;
+  --primary-color: #667eea;
   /* neon mor */
-  --secondary-color: #ec4899;
+  --secondary-color: #f953c6;
   /* neon pembe */
-  --accent-color: #0ea5e9;
-  /* neon mavi */
+  --accent-color: #00d4ff;
+  /* neon cyan */
 
   --bg-gradient: linear-gradient(135deg,
       #e0c3fc,
@@ -61,35 +61,36 @@
   --shadow-heavy: 0 10px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* -------- DARK THEME -------- */
+/* -------- DARK THEME - Neon Purple-Pink-Cyan -------- */
 [data-theme="dark"] {
-  --primary-color: #a78bfa;
+  --primary-color: #667eea;
   /* neon mor */
-  --secondary-color: #f472b6;
+  --secondary-color: #f953c6;
   /* neon pembe */
-  --accent-color: #38bdf8;
+  --accent-color: #00d4ff;
   /* neon cyan */
 
-  --bg-gradient: linear-gradient(135deg,
-      #0f0c29,
-      #302b63,
-      #24243e);
-  /* gece + galaksi hissi */
-  --bg-color: #1a1a2e;
-  /* koyu gece mavi-mor tonları */
-  --bg-card: rgba(30, 30, 50, 0.95);
-  /* hafif transparan kart */
+  --bg-gradient: linear-gradient(135deg, #0a0a1a, #12121f);
+  /* koyu neon arka plan */
+  --bg-color: #0a0a1a;
+  /* primary background */
+  --bg-card: rgba(20, 20, 40, 0.85);
+  /* glassmorphism card */
 
-  --text-color: #f8fafc;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
-  --text-dark: #e2e8f0;
+  --text-color: #ffffff;
+  --text-secondary: #b0b0c0;
+  --text-muted: #6b6b80;
+  --text-dark: #ffffff;
 
-  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.1);
 
   --shadow-light: 0 2px 12px rgba(0, 0, 0, 0.3);
   --shadow-medium: 0 5px 16px rgba(0, 0, 0, 0.4);
   --shadow-heavy: 0 10px 32px rgba(0, 0, 0, 0.5);
+  
+  /* Glow Effects */
+  --glow-primary: 0 0 30px rgba(102, 126, 234, 0.4);
+  --glow-secondary: 0 0 30px rgba(249, 83, 198, 0.4);
 }
 
 /* Base Styles */
@@ -124,7 +125,10 @@
 }
 
 .header h1 {
-  color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: var(--font-3xl);
   margin-bottom: var(--spacing-sm);
   font-weight: 700;
@@ -296,11 +300,12 @@
   text-align: center;
   color: var(--text-dark);
   border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
 }
 
 .movie-item:hover {
   transform: scale(1.02);
-  box-shadow: var(--shadow-heavy);
+  box-shadow: var(--glow-primary, var(--shadow-heavy));
 }
 
 .poster-container {
