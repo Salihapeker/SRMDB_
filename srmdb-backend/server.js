@@ -322,6 +322,7 @@ app.post("/api/auth/register", async (req, res) => {
     console.log("✅ User registered successfully:", username);
     res.status(201).json({
       message: "Kayıt başarılı",
+      token, // Frontend için token root seviyesine taşındı
       user: {
         id: user._id,
         username,
@@ -329,7 +330,6 @@ app.post("/api/auth/register", async (req, res) => {
         email,
         profilePicture: profilePicture || "",
         partner: null,
-        token: token, // Frontend için token eklendi
       },
     });
   } catch (error) {
@@ -382,6 +382,7 @@ app.post("/api/auth/login", async (req, res) => {
     console.log("✅ Login successful:", user.username);
     res.json({
       message: "Giriş başarılı",
+      token, // Frontend için token root seviyesine taşındı
       user: {
         id: user._id,
         username: user.username,
@@ -389,7 +390,6 @@ app.post("/api/auth/login", async (req, res) => {
         email: user.email,
         partner: user.partner,
         profilePicture: user.profilePicture,
-        token: token, // Frontend için token eklendi
       },
     });
   } catch (error) {
