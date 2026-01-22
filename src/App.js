@@ -11,9 +11,7 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";

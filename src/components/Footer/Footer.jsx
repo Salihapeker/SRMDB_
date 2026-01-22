@@ -32,9 +32,9 @@ const Footer = () => {
           <div className="footer__social">
             <h4>Bizi Takip Et</h4>
             <div className="footer__social-icons">
-              <a href="#" aria-label="Twitter">𝕏</a>
-              <a href="#" aria-label="Instagram">📷</a>
-              <a href="#" aria-label="GitHub">💻</a>
+              <button aria-label="Twitter" onClick={() => window.open('https://twitter.com', '_blank')}>𝕏</button>
+              <button aria-label="Instagram" onClick={() => window.open('https://instagram.com', '_blank')}>📷</button>
+              <button aria-label="GitHub" onClick={() => window.open('https://github.com', '_blank')}>💻</button>
             </div>
           </div>
         </div>
