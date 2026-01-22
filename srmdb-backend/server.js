@@ -1849,7 +1849,7 @@ app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
   }
 });
 
-async function generateRecommendations(favorites, watched, limit = 40) {
+async function generateRecommendations(favorites, watched, limit = 10) {
   // TMDB API anahtarı kontrolü
   if (!TMDB_API_KEY) {
     console.error("TMDB_API_KEY tanımlı değil");
@@ -1860,7 +1860,7 @@ async function generateRecommendations(favorites, watched, limit = 40) {
   try {
     if (process.env.GEMINI_API_KEY) {
       console.log("🤖 Gemini ile öneriler hazırlanıyor...");
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
       // Kullanıcı profili oluştur
       const userProfile = {
@@ -1902,17 +1902,16 @@ async function generateRecommendations(favorites, watched, limit = 40) {
       console.log(`🤖 Gemini ${aiRecommendations.length} öneri sundu.`);
 
       // 2. TMDB'den detayları çek
-      const enrichedRecommendations = [];
-
-      for (const rec of aiRecommendations) {
+      // 2. TMDB'den detayları çek (PARALEL)
+      const enrichmentPromises = aiRecommendations.map(async (rec) => {
         try {
           const searchRes = await axios.get(
             `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(rec.original_title)}&language=tr-TR`
           );
 
           if (searchRes.data.results && searchRes.data.results.length > 0) {
-            const movie = searchRes.data.results[0]; // En iyi eşleşmeyi al
-            enrichedRecommendations.push({
+            const movie = searchRes.data.results[0];
+            return {
               movie: {
                 id: movie.id.toString(),
                 title: movie.title,
@@ -1922,12 +1921,16 @@ async function generateRecommendations(favorites, watched, limit = 40) {
                 type: "movie",
               },
               reason: rec.reason
-            });
+            };
           }
         } catch (tmdbError) {
           console.warn(`TMDB search failed for ${rec.original_title}`);
         }
-      }
+        return null;
+      });
+
+      const results = await Promise.all(enrichmentPromises);
+      const enrichedRecommendations = results.filter(item => item !== null);
 
       if (enrichedRecommendations.length > 0) {
         return enrichedRecommendations;
@@ -2006,6 +2009,7 @@ async function generateRecommendations(favorites, watched, limit = 40) {
     return unique;
   }, []);
 
+  console.log(`⚠️ Fallback tamamlandı: ${uniqueRecommendations.length} öneri.`);
   return uniqueRecommendations.slice(0, limit);
 }
 

@@ -29,6 +29,8 @@ API.interceptors.request.use(
       config.timeout = 8000;
     } else if (config.url?.includes("/api/auth/")) {
       config.timeout = 10000;
+    } else if (config.url?.includes("/api/ai/")) {
+      config.timeout = 60000; // AI işlemleri için 60 saniye
     }
 
     // Token'ı header'a ekle (Cookie sorunu için yedek)

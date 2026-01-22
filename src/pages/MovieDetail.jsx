@@ -356,12 +356,33 @@ const MovieDetail = ({ user, addToLibrary }) => {
           <div className="credits">
             <h3>Yapım Ekibi</h3>
             {director ? (
-              <p><strong>Yönetmen:</strong> {director.name}</p>
+              <p>
+                <strong>Yönetmen:</strong>{" "}
+                <span
+                  className="clickable-person"
+                  onClick={() => navigate(`/person/${director.id}`)}
+                >
+                  {director.name}
+                </span>
+              </p>
             ) : (
               <p><strong>Yönetmen:</strong> Bilinmiyor</p>
             )}
             {mainActors.length > 0 ? (
-              <p><strong>Oyuncular:</strong> {mainActors.map(actor => actor.name).join(', ')}</p>
+              <p>
+                <strong>Oyuncular:</strong>{" "}
+                {mainActors.map((actor, index) => (
+                  <React.Fragment key={actor.id}>
+                    <span
+                      className="clickable-person"
+                      onClick={() => navigate(`/person/${actor.id}`)}
+                    >
+                      {actor.name}
+                    </span>
+                    {index < mainActors.length - 1 && ", "}
+                  </React.Fragment>
+                ))}
+              </p>
             ) : (
               <p><strong>Oyuncular:</strong> Bilinmiyor</p>
             )}

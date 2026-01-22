@@ -20,21 +20,24 @@ function ProfileMenu({ user, setUser }) {
     }
   }, []);
 
-  const handleLogout = useCallback(async () => {
-    console.log("Kullanici cikis yapiyor...");
-    try {
-      await API.post("/api/auth/logout");
-      console.log("Logout api call successful");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      // Kesinlikle temizle
-      authHelpers.clearAuth();
-      if (setUser && typeof setUser === "function") {
-        setUser(null);
-      }
-      navigate("/login", { replace: true });
+  const handleLogout = useCallback(() => {
+    console.log("⚡ Hızlı çıkış yapılıyor (Optimistic UI)...");
+
+    // 1. API çağrısını arka planda başlat (bekleme yapma)
+    API.post("/api/auth/logout").catch((error) => {
+      console.warn("⚠️ Arka plan çıkış hatası (önemsiz):", error);
+    });
+
+    // 2. Anında yerel veriyi temizle
+    authHelpers.clearAuth();
+
+    // 3. Anında state'i sıfırla
+    if (setUser && typeof setUser === "function") {
+      setUser(null);
     }
+
+    // 4. Anında Login sayfasına yönlendir
+    navigate("/login", { replace: true });
   }, [setUser, navigate]);
 
   const navigateToPage = useCallback(

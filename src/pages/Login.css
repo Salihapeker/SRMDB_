@@ -1,183 +1,181 @@
-/* Modernleştirme: Variables, fluid sizing, improved focus/hover, dark mode */
+/* Modernleştirme: Variables, fluid width, improved focus/hover, dark mode */
 
-/* Root variables */
-:root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #4a90e2;
-  --bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
-  --text-color: #fff;
-  --error-color: #ff4d4d;
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+/* Scoped variables for Login page only */
+.login-page-wrapper {
+    --login-primary: #ff7eb3;
+    --login-secondary: #4a90e2;
+    --login-text: #fff;
+    --login-bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
+    --login-error: #ff4d4d;
+    --login-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+    /* Wrapper layout */
+    min-height: 100vh;
+    width: 100%;
+    background: var(--login-bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-attachment: fixed;
+    font-family: "Segoe UI", "Roboto", sans-serif;
+    color: var(--login-text);
 }
 
-/* Dark mode */
+/* Dark mode specific for login wrapper */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --text-color: #eee;
-  }
+    .login-page-wrapper {
+        --login-text: #eee;
+    }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-  width: 100%;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
-  font-family: "Segoe UI", "Roboto", sans-serif;
-  color: var(--text-color);
+.login-page-wrapper * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Login genel yerleşim */
 .login-container {
-  text-align: center;
-  margin-top: 100px;
-  max-width: clamp(300px, 80vw, 450px);
-  /* Fluid width */
-  margin-left: auto;
-  margin-right: auto;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  box-shadow:
-    var(--shadow),
-    0 0 10px rgba(74, 144, 226, 0.5);
-  backdrop-filter: blur(5px);
+    text-align: center;
+    width: 100%;
+    max-width: clamp(300px, 80vw, 450px);
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow:
+        var(--login-shadow),
+        0 0 10px rgba(74, 144, 226, 0.5);
+    backdrop-filter: blur(5px);
 }
 
 /* Başlık */
 .login-container h1 {
-  font-size: clamp(1.5rem, 5vw, 28px);
-  color: var(--primary-color);
-  margin-bottom: 25px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    font-size: clamp(1.5rem, 5vw, 28px);
+    color: var(--login-primary);
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* Form düzeni */
 .login-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 /* Input alanları */
 .login-input {
-  padding: 12px;
-  width: 100%;
-  max-width: 300px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-color);
-  font-size: 16px;
-  transition:
-    border-color 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+    padding: 12px;
+    width: 100%;
+    max-width: 300px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--login-text);
+    font-size: 16px;
+    transition:
+        border-color 0.3s ease-in-out,
+        box-shadow 0.3s ease-in-out;
 }
 
 .login-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
+    outline: none;
+    border-color: var(--login-primary);
+    box-shadow: 0 0 10px rgba(255, 126, 179, 0.5);
 }
 
 /* Buton */
 .login-button {
-  padding: 12px 20px;
-  background: linear-gradient(90deg,
-      var(--secondary-color),
-      var(--primary-color));
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 300px;
-  font-size: 16px;
-  font-weight: 500;
-  transition:
-    transform 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
+    padding: 12px 20px;
+    background: linear-gradient(90deg,
+            var(--login-secondary),
+            var(--login-primary));
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 300px;
+    font-size: 16px;
+    font-weight: 500;
+    transition:
+        transform 0.3s ease-in-out,
+        opacity 0.3s ease-in-out;
 }
 
 .login-button:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+    transform: scale(1.05);
+    opacity: 0.9;
 }
 
 .login-button:focus-visible {
-  outline: 2px solid var(--primary-color);
+    outline: 2px solid var(--login-primary);
 }
 
 /* Hata mesajları */
 .error-message {
-  color: var(--error-color);
-  margin-top: 15px;
-  font-size: 14px;
-  font-weight: 500;
+    color: var(--login-error);
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .theme-toggle {
-  margin-top: 15px;
+    margin-top: 15px;
 }
 
 .theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
 }
 
 .theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
 }
 
 .slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
 }
 
 input:checked+.slider {
-  background-color: #2196f3;
+    background-color: #2196f3;
 }
 
 input:checked+.slider:before {
-  transform: translateX(26px);
+    transform: translateX(26px);
 }
 
 .slider-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
 }

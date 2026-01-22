@@ -226,7 +226,7 @@ const Dashboard = ({
         setContentLoading(false);
       }
     },
-    [mediaType, searchQuery, year, minRating, genre]
+    [mediaType, searchQuery, year, minRating, genre, API_KEY]
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

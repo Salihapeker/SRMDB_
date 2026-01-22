@@ -54,84 +54,86 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div
-      className={`login-container ${isDarkMode ? "dark-mode" : "light-mode"}`}
-    >
-      <h1>SRMDB Giriş</h1>
-      <form onSubmit={handleLogin} className="login-form">
-        <input
-          type="email"
-          placeholder="E-posta"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="login-input"
-          disabled={loading}
-          required
-          aria-label="E-posta adresi"
-        />
-        <input
-          type="password"
-          placeholder="Şifre"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="login-input"
-          disabled={loading}
-          required
-          aria-label="Şifre"
-        />
-        {error && (
-          <div
-            className="error-message"
+    <div className="login-page-wrapper">
+      <div
+        className={`login-container ${isDarkMode ? "dark-mode" : "light-mode"}`}
+      >
+        <h1>SRMDB Giriş</h1>
+        <form onSubmit={handleLogin} className="login-form">
+          <input
+            type="email"
+            placeholder="E-posta"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="login-input"
+            disabled={loading}
+            required
+            aria-label="E-posta adresi"
+          />
+          <input
+            type="password"
+            placeholder="Şifre"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="login-input"
+            disabled={loading}
+            required
+            aria-label="Şifre"
+          />
+          {error && (
+            <div
+              className="error-message"
+              style={{
+                color: "#ff4d4d",
+                marginTop: "10px",
+                padding: "10px",
+                backgroundColor: "rgba(255, 77, 77, 0.1)",
+                borderRadius: "5px",
+                border: "1px solid #ff4d4d",
+              }}
+            >
+              {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
             style={{
-              color: "#ff4d4d",
-              marginTop: "10px",
-              padding: "10px",
-              backgroundColor: "rgba(255, 77, 77, 0.1)",
-              borderRadius: "5px",
-              border: "1px solid #ff4d4d",
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
             }}
           >
-            {error}
-          </div>
-        )}
-        <button
-          type="submit"
-          className="login-button"
-          disabled={loading}
-          style={{
-            opacity: loading ? 0.7 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
-        </button>
-      </form>
-      <p style={{ marginTop: "20px", color: isDarkMode ? "#ccc" : "#666" }}>
-        Hesabınız yok mu?{" "}
-        <Link
-          to="/register"
-          style={{
-            color: isDarkMode ? "#ff7eb3" : "#ff4081",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-          onMouseOver={(e) => (e.target.style.textDecoration = "underline")}
-          onMouseOut={(e) => (e.target.style.textDecoration = "none")}
-        >
-          Kayıt Ol
-        </Link>
-      </p>
-      <div className="theme-toggle">
-        <label className="theme-switch">
-          <input
-            type="checkbox"
-            checked={isDarkMode}
-            onChange={toggleDarkMode}
-          />
-          <span className="slider">
-            <span className="slider-text">{isDarkMode ? "🌙" : "☀️"}</span>
-          </span>
-        </label>
+            {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+          </button>
+        </form>
+        <p style={{ marginTop: "20px", color: isDarkMode ? "#ccc" : "#666" }}>
+          Hesabınız yok mu?{" "}
+          <Link
+            to="/register"
+            style={{
+              color: isDarkMode ? "#ff7eb3" : "#ff4081",
+              textDecoration: "none",
+              fontWeight: "bold",
+            }}
+            onMouseOver={(e) => (e.target.style.textDecoration = "underline")}
+            onMouseOut={(e) => (e.target.style.textDecoration = "none")}
+          >
+            Kayıt Ol
+          </Link>
+        </p>
+        <div className="theme-toggle">
+          <label className="theme-switch">
+            <input
+              type="checkbox"
+              checked={isDarkMode}
+              onChange={toggleDarkMode}
+            />
+            <span className="slider">
+              <span className="slider-text">{isDarkMode ? "🌙" : "☀️"}</span>
+            </span>
+          </label>
+        </div>
       </div>
     </div>
   );

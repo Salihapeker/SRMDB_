@@ -11,7 +11,6 @@ import {
   Routes,
   Route,
   Navigate,
-  useNavigate,
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import "./components/LightRays.css";
@@ -29,6 +28,7 @@ const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
 const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
+const PersonDetail = React.lazy(() => import("./pages/PersonDetail"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -321,7 +321,7 @@ function AppContent() {
   }
 
   return (
-    <div className="app-container">
+    <main className="app-container">
       <ToastContainer
         position={isMobile ? "bottom-center" : "top-right"}
         autoClose={3000}
@@ -352,7 +352,7 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={setUser} />}
+      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
 
       <Suspense fallback={
         <div className="loading-container">
@@ -444,6 +444,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/person/:id"
+            element={
+              <PrivateRoute user={user}>
+                <PersonDetail />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/:type/:id"
             element={
               <PrivateRoute user={user}>
@@ -478,7 +486,7 @@ function AppContent() {
           />
         </Routes>
       </Suspense>
-    </div>
+    </main>
   );
 }
 

@@ -77,7 +77,13 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
       default:
         break;
     }
-  }, [activeTab, user.partner, fetchPartnerRecommendations, fetchSharedRecommendations]);
+  }, [
+    activeTab,
+    user.partner,
+    fetchPersonalRecommendations,
+    fetchPartnerRecommendations,
+    fetchSharedRecommendations,
+  ]);
 
   // Öneri kartı
   const RecommendationCard = ({ item, reason }) => {
