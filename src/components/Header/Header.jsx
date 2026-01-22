@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
 import './Header.css';
 
 const Header = ({ user, onLogout }) => {
@@ -140,6 +141,18 @@ const Header = ({ user, onLogout }) => {
       </AnimatePresence>
     </motion.header>
   );
+};
+
+Header.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    profilePicture: PropTypes.string,
+  }),
+  onLogout: PropTypes.func.isRequired,
+};
+
+Header.defaultProps = {
+  user: null,
 };
 
 export default Header;
