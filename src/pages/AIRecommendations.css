@@ -59,7 +59,7 @@
 }
 
 .tab-btn.active, .tab-btn:hover {
-  background-color: var(--secondary-color);
+  background-color: #8b0000;
   transform: scale(1.05);
 }
 
@@ -177,10 +177,10 @@
   outline: 2px solid var(--primary-color);
 }
 
-.btn-small:nth-child(1) { background-color: var(--primary-color); }
-.btn-small:nth-child(1):hover { background-color: #e94e4e; }
-.btn-small:nth-child(2) { background-color: var(--secondary-color); }
-.btn-small:nth-child(2):hover { background-color: #3f1fa3; }
+.btn-small:nth-child(1) { background-color: #e50914; }
+.btn-small:nth-child(1):hover { background-color: #b20710; }
+.btn-small:nth-child(2) { background-color: #8b0000; }
+.btn-small:nth-child(2):hover { background-color: #6a0000; }
 
 .loading-state {
   text-align: center;
@@ -226,7 +226,7 @@
 }
 
 .cta-btn {
-  background-color: var(--secondary-color);
+  background-color: #8b0000;
   color: var(--text-color);
   padding: 10px 20px;
   border: none;
@@ -236,7 +236,7 @@
 }
 
 .cta-btn:hover {
-  background-color: #3f1fa3;
+  background-color: #6a0000;
   transform: scale(1.05);
 }
 

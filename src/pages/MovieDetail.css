@@ -140,11 +140,11 @@
 }
 
 .watched-badge.partner {
-  background: linear-gradient(45deg, #2196f3, #64b5f6);
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
 }
 
 .watched-badge.together {
-  background: linear-gradient(45deg, #e91e63, #f06292);
+  background: linear-gradient(45deg, #e50914, #ff4d4d);
   animation: pulse 2s infinite;
 }
 
@@ -188,7 +188,7 @@
 
 .overview h3,
 .credits h3 {
-  color: var(--secondary-color);
+  color: #b20710;
   margin-bottom: 15px;
   font-size: 1.3rem;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
@@ -208,7 +208,7 @@
 }
 
 .credits strong {
-  color: var(--accent-color);
+  color: #ffd700;
 }
 
 .clickable-person {
@@ -419,7 +419,7 @@ textarea:focus {
   font-size: 1.1rem;
   margin: 15px 0;
   padding-left: 15px;
-  border-left: 3px solid var(--secondary-color);
+  border-left: 3px solid #b20710;
 }
 
 .review-date {
@@ -430,7 +430,7 @@ textarea:focus {
 
 /* Uyumluluk Skoru */
 .compatibility-score {
-  background: linear-gradient(135deg, #1f1c2c, #302b63);
+  background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
   padding: 25px;
   border-radius: 20px;
   text-align: center;
@@ -452,10 +452,10 @@ textarea:focus {
 
 .meter-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  background: linear-gradient(90deg, #e50914, #ff4d4d);
   border-radius: 10px;
   transition: width 1s ease-out;
-  box-shadow: 0 0 10px rgba(255, 65, 108, 0.5);
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
 }
 
 /* Animations */

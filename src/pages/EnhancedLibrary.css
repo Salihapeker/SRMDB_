@@ -2,10 +2,10 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
-  --bg-color: rgba(255, 255, 255, 0.05);
+  --primary-color: #e50914;
+  --secondary-color: #8b0000;
+  --accent-color: #ffd700;
+  --bg-color: rgba(20, 20, 20, 0.95);
   
   --text-color: white;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -71,7 +71,7 @@
 }
 
 .toggle-btn.active, .toggle-btn:hover {
-  background-color: var(--secondary-color);
+  background-color: #8b0000;
   transform: scale(1.05);
 }
 
@@ -170,9 +170,9 @@
   transition: opacity 0.2s; /* Hafif fade */
 }
 
-.watched-user { background-color: var(--accent-color); }
-.watched-partner { background-color: var(--primary-color); }
-.watched-together { background-color: #e94e4e; }
+.watched-user { background-color: #ffd700; }
+.watched-partner { background-color: #e50914; }
+.watched-together { background-color: #ff4d4d; }
 
 /* Kart bilgileri */
 .card-info h4 {
@@ -214,15 +214,16 @@
 }
 
 .card-actions .mark-watched-btn {
-  background-color: var(--accent-color);
+  background-color: #ffd700;
+  color: #0a0a0a;
 }
 
 .card-actions button:hover {
-  background-color: #c0392b;
+  background-color: #8b0000;
 }
 
 .card-actions .mark-watched-btn:hover {
-  background-color: #3f6ad8;
+  background-color: #e5c200;
 }
 
 /* İstatistikler - Responsive */
@@ -318,7 +319,7 @@
 }
 
 .cta-btn {
-  background-color: var(--secondary-color);
+  background-color: #8b0000;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -328,7 +329,7 @@
 }
 
 .cta-btn:hover {
-  background-color: #3f1fa3;
+  background-color: #6a0000;
   transform: scale(1.05);
 }
 
@@ -399,8 +400,8 @@
 }
 
 .btn-favorite {
-  background: #ff9800;
-  color: white;
+  background: #ffd700;
+  color: #0a0a0a;
 }
 
 .btn-dislike {
@@ -411,7 +412,7 @@
 .action-btn {
   padding: 10px 15px;
   border-radius: 20px;
-  background: linear-gradient(90deg, #4a90e2, #ff7eb3);
+  background: linear-gradient(90deg, #e50914, #b20710);
   color: white;
   border: none;
   cursor: pointer;
