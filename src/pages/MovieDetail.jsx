@@ -21,6 +21,8 @@ const MovieDetail = ({ user, addToLibrary }) => {
   const [averageRating, setAverageRating] = useState(null);
   const [jointReview, setJointReview] = useState({ rating: 0, comment: '' });
   const [activeTab, setActiveTab] = useState('my_review'); // 'my_review', 'partner_review', 'joint_review'
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
 
   const fetchWithTimeout = async (url, options, timeout = 15000) => {
     const controller = new AbortController();
@@ -51,7 +53,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
 
       // TMDB API çağrısı
       const tmdbResponse = await fetchWithTimeout(
-        `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=tr-TR&append_to_response=credits`,
+        `https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=tr-TR&append_to_response=credits,videos,watch/providers`,
         {},
         10000
       );
@@ -86,6 +88,14 @@ const MovieDetail = ({ user, addToLibrary }) => {
         const sum = ratings.reduce((a, b) => a + b, 0);
         setAverageRating((sum / ratings.length).toFixed(1));
       }
+
+      // Fragman bulma (Youtube ve Type: Trailer/Teaser)
+      const videos = tmdbData.videos?.results || [];
+      const trailer = videos.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+      if (trailer) {
+        setTrailerKey(trailer.key);
+      }
+
     } catch (error) {
       console.error('Film detayları alınırken hata:', error.message);
       setErrorMessage(error.message || 'Veri yüklenemedi. Lütfen tekrar deneyin.');
@@ -286,6 +296,14 @@ const MovieDetail = ({ user, addToLibrary }) => {
               </span>
             )}
           </div>
+          {trailerKey && (
+            <button
+              className="trailer-btn"
+              onClick={() => setShowTrailer(true)}
+            >
+              ▶ Fragman İzle
+            </button>
+          )}
         </div>
 
         <div className="info-section">
@@ -302,6 +320,33 @@ const MovieDetail = ({ user, addToLibrary }) => {
               <span>🎭 Tür Bilinmiyor</span>
             )}
           </div>
+
+          {/* JustWatch / Nerede İzlenir */}
+          {movieData['watch/providers']?.results?.TR?.flatrate && (
+            <div className="providers-section">
+              <h3>Nerede İzlenir?</h3>
+              <div className="provider-list">
+                {movieData['watch/providers'].results.TR.flatrate.map((provider) => (
+                  <a
+                    key={provider.provider_id}
+                    href={movieData['watch/providers'].results.TR.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="provider-item"
+                    title={`${provider.provider_name}'da izle`}
+                  >
+                    <img
+                      src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                      alt={provider.provider_name}
+                    />
+                  </a>
+                ))}
+              </div>
+              <a href={movieData['watch/providers'].results.TR.link} target="_blank" rel="noopener noreferrer" className="justwatch-link">
+                JustWatch üzerinden tüm seçenekleri gör
+              </a>
+            </div>
+          )}
 
           <div className="overview">
             <h3>Özet</h3>
@@ -527,6 +572,22 @@ const MovieDetail = ({ user, addToLibrary }) => {
               ></div>
             </div>
             <span>Ortalama Puan: {averageRating}/5 (%{Math.round(averageRating * 20)} Uyumlu)</span>
+          </div>
+        </div>
+      )}
+      {showTrailer && trailerKey && (
+        <div className="modal-overlay" onClick={() => setShowTrailer(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-modal" onClick={() => setShowTrailer(false)}>✕</button>
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
         </div>
       )}
