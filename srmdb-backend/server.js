@@ -134,6 +134,29 @@ const userSchema = new mongoose.Schema({
       read: { type: Boolean, default: false },
     },
   ],
+  badges: [
+    {
+      id: String,
+      name: String,
+      description: String,
+      icon: String,
+      category: String, // 'watching', 'social', 'collection', 'special'
+      requirement: {
+        type: String,    // 'watched_count', 'review_count', 'partner_watched', 'streak_days', 'library_count'
+        value: Number
+      },
+      rarity: String,    // 'common', 'rare', 'epic', 'legendary'
+      unlockedAt: Date
+    }
+  ],
+  stats: {
+    totalWatched: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 },
+    partnerWatched: { type: Number, default: 0 },
+    currentStreak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
+    lastWatchDate: Date
+  }
 });
 
 // Diğer modeller
@@ -180,6 +203,98 @@ const User = mongoose.model("User", userSchema);
 const Review = mongoose.model("Review", reviewSchema);
 const SharedLibrary = mongoose.model("SharedLibrary", sharedLibrarySchema);
 const Archive = mongoose.model("Archive", archiveSchema);
+
+// Badge Definitions
+const BADGES = [
+  // İzleme Rozetleri
+  { id: 'first_movie', name: 'İlk Adım', description: 'İlk filmini izle', icon: '🎬', category: 'watching', requirement: { type: 'watched_count', value: 1 }, rarity: 'common' },
+  { id: 'movie_lover', name: 'Film Sever', description: '10 film izle', icon: '🎥', category: 'watching', requirement: { type: 'watched_count', value: 10 }, rarity: 'common' },
+  { id: 'cinephile', name: 'Sinefil', description: '50 film izle', icon: '🎞️', category: 'watching', requirement: { type: 'watched_count', value: 50 }, rarity: 'rare' },
+  { id: 'film_guru', name: 'Film Gurusu', description: '100 film izle', icon: '🏆', category: 'watching', requirement: { type: 'watched_count', value: 100 }, rarity: 'epic' },
+  { id: 'legendary_watcher', name: 'Efsane İzleyici', description: '500 film izle', icon: '👑', category: 'watching', requirement: { type: 'watched_count', value: 500 }, rarity: 'legendary' },
+  
+  // Yorum Rozetleri
+  { id: 'first_review', name: 'İlk Yorum', description: 'İlk yorumunu yaz', icon: '✍️', category: 'social', requirement: { type: 'review_count', value: 1 }, rarity: 'common' },
+  { id: 'critic', name: 'Eleştirmen', description: '25 yorum yaz', icon: '📝', category: 'social', requirement: { type: 'review_count', value: 25 }, rarity: 'rare' },
+  { id: 'master_critic', name: 'Usta Eleştirmen', description: '100 yorum yaz', icon: '🎭', category: 'social', requirement: { type: 'review_count', value: 100 }, rarity: 'epic' },
+  
+  // Partner Rozetleri
+  { id: 'couple_start', name: 'Birlikte Başlangıç', description: 'Partner ile 1 film izle', icon: '💕', category: 'social', requirement: { type: 'partner_watched', value: 1 }, rarity: 'common' },
+  { id: 'movie_date', name: 'Film Gecesi', description: 'Partner ile 10 film izle', icon: '🍿', category: 'social', requirement: { type: 'partner_watched', value: 10 }, rarity: 'rare' },
+  { id: 'perfect_match', name: 'Mükemmel Uyum', description: 'Partner ile 50 film izle', icon: '❤️‍🔥', category: 'social', requirement: { type: 'partner_watched', value: 50 }, rarity: 'epic' },
+  
+  // Streak Rozetleri
+  { id: 'streak_3', name: 'Düzenli İzleyici', description: '3 gün üst üste film izle', icon: '🔥', category: 'special', requirement: { type: 'streak_days', value: 3 }, rarity: 'common' },
+  { id: 'streak_7', name: 'Haftalık Seri', description: '7 gün üst üste film izle', icon: '⚡', category: 'special', requirement: { type: 'streak_days', value: 7 }, rarity: 'rare' },
+  { id: 'streak_30', name: 'Aylık Maraton', description: '30 gün üst üste film izle', icon: '💫', category: 'special', requirement: { type: 'streak_days', value: 30 }, rarity: 'legendary' },
+  
+  // Koleksiyon Rozetleri
+  { id: 'collector', name: 'Koleksiyoncu', description: 'Kütüphanede 50 film', icon: '📚', category: 'collection', requirement: { type: 'library_count', value: 50 }, rarity: 'rare' },
+  { id: 'archivist', name: 'Arşivci', description: 'Kütüphanede 200 film', icon: '🗃️', category: 'collection', requirement: { type: 'library_count', value: 200 }, rarity: 'epic' },
+];
+
+// Badge checking function
+const checkAndUnlockBadges = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    const stats = user.stats || {};
+    const totalWatched = stats.totalWatched || user.library?.watched?.length || 0;
+    const totalReviews = stats.totalReviews || 0;
+    const partnerWatched = stats.partnerWatched || user.library?.watchedTogether?.length || 0;
+    const currentStreak = stats.currentStreak || 0;
+    const libraryCount = (user.library?.favorites?.length || 0) + 
+                        (user.library?.watchlist?.length || 0) + 
+                        (user.library?.watched?.length || 0);
+
+    const userBadges = user.badges || [];
+    const unlockedBadgeIds = userBadges.map(b => b.id);
+    const newBadges = [];
+
+    for (const badge of BADGES) {
+      if (unlockedBadgeIds.includes(badge.id)) continue;
+
+      let unlock = false;
+      switch (badge.requirement.type) {
+        case 'watched_count':
+          unlock = totalWatched >= badge.requirement.value;
+          break;
+        case 'review_count':
+          unlock = totalReviews >= badge.requirement.value;
+          break;
+        case 'partner_watched':
+          unlock = partnerWatched >= badge.requirement.value;
+          break;
+        case 'streak_days':
+          unlock = currentStreak >= badge.requirement.value;
+          break;
+        case 'library_count':
+          unlock = libraryCount >= badge.requirement.value;
+          break;
+      }
+
+      if (unlock) {
+        newBadges.push({
+          ...badge,
+          unlockedAt: new Date()
+        });
+      }
+    }
+
+    if (newBadges.length > 0) {
+      user.badges = [...userBadges, ...newBadges];
+      await user.save();
+      console.log(`🏆 User ${user.username} unlocked ${newBadges.length} new badges`);
+      return newBadges;
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Badge check error:', error);
+    return [];
+  }
+};
 
 // Auth Middleware
 const authMiddleware = async (req, res, next) => {
@@ -588,6 +703,43 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
 
     user.library[category].push(movieData);
 
+    // Update stats for badge system
+    if (category === "watched") {
+      if (!user.stats) user.stats = {};
+      user.stats.totalWatched = (user.stats.totalWatched || 0) + 1;
+      
+      // Update streak
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const lastWatch = user.stats.lastWatchDate ? new Date(user.stats.lastWatchDate) : null;
+      
+      if (lastWatch) {
+        lastWatch.setHours(0, 0, 0, 0);
+        const daysDiff = Math.floor((today - lastWatch) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === 1) {
+          user.stats.currentStreak = (user.stats.currentStreak || 0) + 1;
+        } else if (daysDiff === 0) {
+          // Same day, don't change streak
+        } else {
+          user.stats.currentStreak = 1;
+        }
+      } else {
+        user.stats.currentStreak = 1;
+      }
+      
+      if (user.stats.currentStreak > (user.stats.longestStreak || 0)) {
+        user.stats.longestStreak = user.stats.currentStreak;
+      }
+      
+      user.stats.lastWatchDate = new Date();
+    }
+
+    if (category === "watchedTogether") {
+      if (!user.stats) user.stats = {};
+      user.stats.partnerWatched = (user.stats.partnerWatched || 0) + 1;
+    }
+
     // Handle shared library for watchedTogether
     if (category === "watchedTogether" && user.partner) {
       const sharedLibrary = await SharedLibrary.findOne({
@@ -610,6 +762,12 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
     await user.save();
     io.to(user._id.toString()).emit("libraryUpdate");
     io.to(user._id.toString()).emit("notificationUpdate");
+
+    // Check for new badges
+    const newBadges = await checkAndUnlockBadges(req.user._id);
+    if (newBadges.length > 0) {
+      io.to(user._id.toString()).emit("badgeUnlocked", { badges: newBadges });
+    }
 
     console.log(`✅ ${category}'e eklendi:`, movieData.title || movieData.name);
     res.json({ message: "Başarıyla eklendi", library: user.library });
@@ -932,6 +1090,11 @@ app.post("/api/reviews/:type/:id", authMiddleware, async (req, res) => {
       { upsert: true, new: true }
     );
 
+    // Update review count for badge system
+    if (!user.stats) user.stats = {};
+    const reviewCount = await Review.countDocuments({ userId: user._id });
+    user.stats.totalReviews = reviewCount;
+
     const itemIndex = user.library.watched.findIndex((i) => i.id === id);
     if (itemIndex !== -1) {
       user.library.watched[itemIndex].userRating = rating;
@@ -983,6 +1146,13 @@ app.post("/api/reviews/:type/:id", authMiddleware, async (req, res) => {
 
     await user.save();
     io.to(user._id).emit("notificationUpdate");
+    
+    // Check for new badges
+    const newBadges = await checkAndUnlockBadges(req.user._id);
+    if (newBadges.length > 0) {
+      io.to(user._id.toString()).emit("badgeUnlocked", { badges: newBadges });
+    }
+    
     console.log(`✅ Değerlendirme eklendi: ${id} (${type})`);
     res.json({
       message: "Değerlendirme kaydedildi",
@@ -2324,6 +2494,69 @@ app.put("/api/user/update", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("❌ User update error:", error);
     res.status(500).json({ message: "Kullanıcı güncelleme başarısız" });
+  }
+});
+
+// ===== Badge System Endpoints =====
+
+// Get all available badges
+app.get("/api/badges/available", authMiddleware, async (req, res) => {
+  try {
+    res.json({ badges: BADGES });
+  } catch (error) {
+    console.error("❌ Get badges error:", error);
+    res.status(500).json({ message: "Rozetler getirilemedi" });
+  }
+});
+
+// Get user's badges
+app.get("/api/badges/user", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json({ 
+      badges: user.badges || [],
+      stats: user.stats || {}
+    });
+  } catch (error) {
+    console.error("❌ Get user badges error:", error);
+    res.status(500).json({ message: "Kullanıcı rozetleri getirilemedi" });
+  }
+});
+
+// Manually trigger badge check (for development/testing)
+app.post("/api/badges/check", authMiddleware, async (req, res) => {
+  try {
+    const newBadges = await checkAndUnlockBadges(req.user._id);
+    res.json({ 
+      message: `${newBadges.length} yeni rozet açıldı`,
+      newBadges 
+    });
+  } catch (error) {
+    console.error("❌ Badge check error:", error);
+    res.status(500).json({ message: "Rozet kontrolü başarısız" });
+  }
+});
+
+// Profile picture upload endpoint
+app.put("/api/users/profile-picture", authMiddleware, async (req, res) => {
+  try {
+    const { profilePicture } = req.body; // base64 string
+    
+    if (!profilePicture) {
+      return res.status(400).json({ message: "Profil fotoğrafı gerekli" });
+    }
+
+    const user = await User.findById(req.user._id);
+    user.profilePicture = profilePicture;
+    await user.save();
+
+    res.json({ 
+      message: "Profil fotoğrafı güncellendi", 
+      profilePicture: user.profilePicture 
+    });
+  } catch (error) {
+    console.error("❌ Profile picture update error:", error);
+    res.status(500).json({ message: "Profil fotoğrafı güncellenemedi" });
   }
 });
 
