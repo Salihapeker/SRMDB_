@@ -226,13 +226,14 @@ const Dashboard = ({
         setContentLoading(false);
       }
     },
-    [mediaType, searchQuery, year, minRating, genre, API_KEY]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mediaType, searchQuery, year, minRating, genre]
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedFetchContent = useCallback(
     debounce((page = 1) => fetchContent(page), 500),
-    [fetchContent]
+    []
   );
 
   useEffect(() => {
@@ -247,7 +248,8 @@ const Dashboard = ({
   useEffect(() => {
     setCurrentPage(1);
     fetchContent(1);
-  }, [mediaType, year, minRating, genre, fetchContent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaType, year, minRating, genre]);
 
   const handlePartnerSearch = useCallback(async () => {
     if (!partnerInput.trim()) {
