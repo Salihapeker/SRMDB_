@@ -7,11 +7,11 @@ async function findWorkingModel() {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     const modelsToTry = [
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-        "gemini-pro",
-        "gemini-1.0-pro"
+        "gemini-2.0-flash",           // En yeni, hızlı ve ücretsiz
+        "gemini-2.0-flash-lite",      // Daha hafif, ücretsiz
+        "gemini-1.5-flash-002",       // Stabil flash model, ücretsiz
+        "gemini-1.5-flash-8b",        // Küçük ve hızlı, ücretsiz
+        "gemini-1.5-pro-002"          // Pro model, ücretsiz tier'da kullanılabilir
     ];
 
     let logs = "";
