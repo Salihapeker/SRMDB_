@@ -384,15 +384,16 @@ function AppContent() {
         </div>
       }>
         <div className="page-content">
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Login setUser={updateUser} />
-              )
-            }
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Login setUser={updateUser} />
+                )
+              }
           />
           <Route
             path="/register"
