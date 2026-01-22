@@ -5,7 +5,7 @@
   background: linear-gradient(135deg, #16213E 0%, #1A1A2E 100%);
   padding: 0 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  border-bottom: 2px solid #F5A623;
+  border-bottom: 2px solid var(--primary-gold);
 }
 
 .header-container {
@@ -31,7 +31,7 @@
 .logo-text {
   font-size: 28px;
   font-weight: 800;
-  background: linear-gradient(90deg, #F5A623 0%, #FF9500 50%, #E91E8C 100%);
+  background: linear-gradient(90deg, var(--primary-gold) 0%, var(--primary-orange) 50%, var(--accent-pink) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -53,14 +53,14 @@
 }
 
 .main-nav a:hover {
-  color: #F5A623;
+  color: var(--primary-gold);
   background: rgba(245, 166, 35, 0.1);
 }
 
 .main-nav a.active {
-  color: #F5A623;
+  color: var(--primary-gold);
   background: rgba(245, 166, 35, 0.15);
-  border-bottom: 2px solid #F5A623;
+  border-bottom: 2px solid var(--primary-gold);
 }
 
 .user-section {
@@ -85,8 +85,8 @@
 }
 
 .login-btn, .logout-btn {
-  background: linear-gradient(90deg, #F5A623 0%, #FF9500 100%);
-  color: #1A1A2E;
+  background: var(--gradient-gold);
+  color: var(--bg-primary);
   border: none;
   padding: 10px 20px;
   border-radius: 25px;
@@ -98,7 +98,7 @@
 }
 
 .login-btn:hover, .logout-btn:hover {
-  background: linear-gradient(90deg, #FF9500 0%, #E91E8C 100%);
+  background: var(--gradient-accent);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
 }
