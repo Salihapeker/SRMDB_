@@ -1,4 +1,9 @@
 const express = require("express");
+
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at:', p, 'reason:', reason);
+});
+
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const compression = require("compression");
@@ -1776,7 +1781,7 @@ app.get("/api/movies/popular", authMiddleware, async (req, res) => {
 
 // 🤖 AI RECOMMENDATIONS
 app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
-  const { type, limit = 40 } = req.body; // Varsayılan olarak 40 öneri, frontend'den gelen limit parametresini al
+  const { type, limit = 10 } = req.body; // Varsayılan olarak 10 öneri
 
   // Geçerli öneri tiplerini kontrol et
   if (!["personal", "partner", "shared"].includes(type)) {
@@ -1785,15 +1790,18 @@ app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
 
   try {
     let recommendations = [];
+    let source = "gemini";
 
     // Kişisel öneriler
     if (type === "personal") {
       const user = await User.findById(req.user._id);
-      recommendations = await generateRecommendations(
+      const result = await generateRecommendations(
         user.library.favorites,
         user.library.watched,
         limit
       );
+      recommendations = result.recommendations;
+      source = result.source;
     }
     // Partner önerileri
     else if (type === "partner" && req.user.partner) {
@@ -1801,11 +1809,13 @@ app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
       if (!partner) {
         return res.status(404).json({ message: "Partner bulunamadı" });
       }
-      recommendations = await generateRecommendations(
+      const result = await generateRecommendations(
         partner.library.favorites,
         partner.library.watched,
         limit
       );
+      recommendations = result.recommendations;
+      source = result.source;
     }
     // Ortak öneriler
     else if (type === "shared" && req.user.partner) {
@@ -1816,11 +1826,13 @@ app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
       const sharedLibrary = await SharedLibrary.findOne({
         users: { $all: [req.user._id, partner._id] },
       });
-      recommendations = await generateRecommendations(
+      const result = await generateRecommendations(
         sharedLibrary?.favorites || [],
         sharedLibrary?.watched || [],
         limit
       );
+      recommendations = result.recommendations;
+      source = result.source;
 
       const userReviews = await Review.find({ userId: req.user._id });
       const partnerReviews = await Review.find({ userId: partner._id });
@@ -1842,7 +1854,7 @@ app.post("/api/ai/recommendations", authMiddleware, async (req, res) => {
       );
     }
 
-    res.json({ recommendations });
+    res.json({ recommendations, source });
   } catch (error) {
     console.error("❌ AI önerileri alınırken hata:", error.message);
     res.status(500).json({ message: "Öneriler alınamadı: " + error.message });
@@ -1853,88 +1865,111 @@ async function generateRecommendations(favorites, watched, limit = 10) {
   // TMDB API anahtarı kontrolü
   if (!TMDB_API_KEY) {
     console.error("TMDB_API_KEY tanımlı değil");
-    return [];
+    return { recommendations: [], source: "error" };
   }
 
   // 1. Gemini ile öneri oluştur
   try {
     if (process.env.GEMINI_API_KEY) {
       console.log("🤖 Gemini ile öneriler hazırlanıyor...");
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-      // Kullanıcı profili oluştur
-      const userProfile = {
-        favorites: favorites.slice(0, 10).map(f => f.title),
-        watched: watched.slice(0, 10).map(w => w.title),
-        recent: watched.slice(0, 5).map(w => w.title)
-      };
+      // Model rotasyonu - Sırayla dene
+      const modelsToTry = [
+        "gemini-2.0-flash-exp",
+        "gemini-exp-1206",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-pro",
+        "gemini-1.5-pro-latest",
+        "gemini-pro"
+      ];
 
-      const prompt = `
-        Sen bir film öneri uzmanısın. Aşağıdaki kullanıcı profiline göre ${limit} adet film/dizi önerisi yap.
-        
-        Kullanıcının Favorileri: ${userProfile.favorites.join(", ")}
-        Son İzledikleri: ${userProfile.recent.join(", ")}
-        
-        Kurallar:
-        1. JSON formatında yanıt ver: [{ "original_title": "Film Adı", "reason": "Kısa ve samimi bir öneri nedeni" }]
-        2. Favorilerde veya izlenenlerde olan filmleri önerme.
-        3. Farklı türlerden ve yıllardan çeşitli öneriler yap.
-        4. "reason" kısmını Türkçe yaz ve kullanıcıya hitap et (Örn: "Sevebilirsin çünkü...").
-        5. Sadece JSON array döndür, başka metin ekleme.
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let text = response.text();
-
-      // JSON temizleme (Markdown bloklarını kaldır)
-      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
-      console.log("DEBUG - Gemini Response Text:", text);
-
-      let aiRecommendations = [];
-      try {
-        aiRecommendations = JSON.parse(text);
-      } catch (err) {
-        console.error("DEBUG - JSON Parse Error:", err);
-      }
-
-      console.log(`🤖 Gemini ${aiRecommendations.length} öneri sundu.`);
-
-      // 2. TMDB'den detayları çek
-      // 2. TMDB'den detayları çek (PARALEL)
-      const enrichmentPromises = aiRecommendations.map(async (rec) => {
+      for (const modelName of modelsToTry) {
         try {
-          const searchRes = await axios.get(
-            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(rec.original_title)}&language=tr-TR`
-          );
+          console.log(`Trying model: ${modelName}...`);
+          const model = genAI.getGenerativeModel({ model: modelName });
 
-          if (searchRes.data.results && searchRes.data.results.length > 0) {
-            const movie = searchRes.data.results[0];
-            return {
-              movie: {
-                id: movie.id.toString(),
-                title: movie.title,
-                poster_path: movie.poster_path,
-                release_date: movie.release_date,
-                vote_average: movie.vote_average,
-                type: "movie",
-              },
-              reason: rec.reason
-            };
+          // Kullanıcı profili oluştur
+          const userProfile = {
+            favorites: favorites.slice(0, 10).map(f => f.title),
+            watched: watched.slice(0, 10).map(w => w.title),
+            recent: watched.slice(0, 5).map(w => w.title)
+          };
+
+          const prompt = `
+            Film öneri uzmanısın. Kullanıcı profiline göre ${limit} adet öneri JSON array olarak döndür.
+            
+            Favoriler: ${userProfile.favorites.join(", ")}
+            Son İzlenenler: ${userProfile.recent.join(", ")}
+            
+            Kurallar:
+            1. Format: [{ "original_title": "Film Adı", "reason": "Kısa Türkçe neden" }]
+            2. Favori/İzlenenlerden önerme.
+            3. Çeşitli tür/yıl seç.
+            4. Sadece saf JSON array döndür. Markdown yok.
+          `;
+
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          let text = response.text();
+
+          // JSON temizleme (Markdown bloklarını kaldır)
+          text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+          console.log("DEBUG - Gemini Response Text:", text);
+
+          let aiRecommendations = [];
+          try {
+            aiRecommendations = JSON.parse(text);
+          } catch (err) {
+            console.error("DEBUG - JSON Parse Error:", err);
+            continue; // JSON hatası varsa sonraki modeli dene
           }
-        } catch (tmdbError) {
-          console.warn(`TMDB search failed for ${rec.original_title}`);
+
+          console.log(`🤖 Gemini (${modelName}) ${aiRecommendations.length} öneri sundu.`);
+
+          // 2. TMDB'den detayları çek (PARALEL)
+          const enrichmentPromises = aiRecommendations.map(async (rec) => {
+            try {
+              const searchRes = await axios.get(
+                `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(rec.original_title)}&language=tr-TR`
+              );
+
+              if (searchRes.data.results && searchRes.data.results.length > 0) {
+                const movie = searchRes.data.results[0];
+                return {
+                  movie: {
+                    id: movie.id.toString(),
+                    title: movie.title,
+                    poster_path: movie.poster_path,
+                    release_date: movie.release_date,
+                    vote_average: movie.vote_average,
+                    type: "movie",
+                  },
+                  reason: rec.reason
+                };
+              }
+            } catch (tmdbError) {
+              console.warn(`TMDB search failed for ${rec.original_title}`);
+            }
+            return null;
+          });
+
+          const results = await Promise.all(enrichmentPromises);
+          const enrichedRecommendations = results.filter(item => item !== null);
+
+          if (enrichedRecommendations.length > 0) {
+            return { recommendations: enrichedRecommendations, source: "gemini" };
+          }
+          // Başarılı olursa döngüden çık ve dön
+        } catch (modelError) {
+          console.warn(`❌ Model ${modelName} failed:`, modelError.message);
+          // Sıradaki modeli dene
+          continue;
         }
-        return null;
-      });
-
-      const results = await Promise.all(enrichmentPromises);
-      const enrichedRecommendations = results.filter(item => item !== null);
-
-      if (enrichedRecommendations.length > 0) {
-        return enrichedRecommendations;
       }
+
+      console.warn("⚠️ All Gemini models failed. Switching to fallback.");
     } else {
       console.warn("⚠️ GEMINI_API_KEY eksik, fallback sistemine geçiliyor.");
     }
@@ -1952,7 +1987,7 @@ async function generateRecommendations(favorites, watched, limit = 10) {
       const response = await axios.get(
         `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
       );
-      return response.data.results.slice(0, limit).map((movie) => ({
+      const recs = response.data.results.slice(0, limit).map((movie) => ({
         movie: {
           id: movie.id.toString(),
           title: movie.title,
@@ -1963,9 +1998,10 @@ async function generateRecommendations(favorites, watched, limit = 10) {
         },
         reason: "Popüler filmler",
       }));
+      return { recommendations: recs, source: "fallback" };
     } catch (error) {
       console.error("Popüler filmler alınamadı:", error);
-      return [];
+      return { recommendations: [], source: "error" };
     }
   }
 
@@ -2010,7 +2046,7 @@ async function generateRecommendations(favorites, watched, limit = 10) {
   }, []);
 
   console.log(`⚠️ Fallback tamamlandı: ${uniqueRecommendations.length} öneri.`);
-  return uniqueRecommendations.slice(0, limit);
+  return { recommendations: uniqueRecommendations.slice(0, limit), source: "fallback" };
 }
 
 // ✅ ORTAK YORUM EKLEME

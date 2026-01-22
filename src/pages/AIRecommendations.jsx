@@ -10,6 +10,7 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
   const [sharedRecommendations, setSharedRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [source, setSource] = useState('gemini');
   const [activeTab, setActiveTab] = useState('personal');
 
   // Kişisel öneriler (TMDB tabanlı)
@@ -17,9 +18,10 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     try {
       setLoading(true);
       setError('');
-      const response = await API.post('/api/ai/recommendations', { type: 'personal' });
+      const response = await API.post('/api/ai/recommendations', { type: 'personal', limit: 10 });
       console.log('Personal Recommendations Response:', response.data);
       setRecommendations(response.data.recommendations || []);
+      setSource(response.data.source || 'gemini');
     } catch (error) {
       console.error('Kişisel öneriler alınırken hata:', error);
       setError('Kişisel öneriler yüklenemedi. Daha fazla film değerlendirin.');
@@ -34,9 +36,10 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     try {
       setLoading(true);
       setError('');
-      const response = await API.post('/api/ai/recommendations', { type: 'partner' });
+      const response = await API.post('/api/ai/recommendations', { type: 'partner', limit: 10 });
       console.log('Partner Recommendations Response:', response.data);
       setPartnerRecommendations(response.data.recommendations || []);
+      setSource(response.data.source || 'gemini');
     } catch (error) {
       console.error('Partner önerileri alınırken hata:', error);
       setError('Partner önerileri yüklenemedi.');
@@ -51,9 +54,10 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
     try {
       setLoading(true);
       setError('');
-      const response = await API.post('/api/ai/recommendations', { type: 'shared' });
+      const response = await API.post('/api/ai/recommendations', { type: 'shared', limit: 10 });
       console.log('Shared Recommendations Response:', response.data);
       setSharedRecommendations(response.data.recommendations || []);
+      setSource(response.data.source || 'gemini');
     } catch (error) {
       console.error('Ortak öneriler alınırken hata:', error);
       setError('Ortak öneriler yüklenemedi.');
@@ -210,6 +214,20 @@ const AIRecommendations = ({ user, addToLibrary, libraryItems }) => {
         </div>
       ) : (
         <div className="recommendations-content">
+
+          <div className="source-badge-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            {source === 'gemini' ? (
+              <div className="source-badge gemini" style={{ background: 'linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)', padding: '8px 16px', borderRadius: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(79, 172, 254, 0.4)' }}>
+                <span>✨</span>
+                <strong>Gemini AI ile Güçlendirildi</strong>
+              </div>
+            ) : (
+              <div className="source-badge fallback" style={{ background: '#ff9800', padding: '8px 16px', borderRadius: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 15px rgba(255, 152, 0, 0.4)', position: 'relative' }} title="AI kotası dolduğu için standart algoritma kullanılıyor.">
+                <span>⚠️</span>
+                <strong>Standart Algoritma (Kota Doldu)</strong>
+              </div>
+            )}
+          </div>
           {activeTab === 'personal' && (
             <div className="recommendations-grid">
               {recommendations.length > 0 ? (

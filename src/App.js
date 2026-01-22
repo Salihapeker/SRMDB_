@@ -14,6 +14,7 @@ import {
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import "./components/LightRays.css";
+import "./App.css";
 import API, { authHelpers } from "./services/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

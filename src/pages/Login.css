@@ -22,10 +22,10 @@
 }
 
 /* Dark mode specific for login wrapper */
-@media (prefers-color-scheme: dark) {
-    .login-page-wrapper {
-        --login-text: #eee;
-    }
+[data-theme='dark'] .login-page-wrapper {
+    --login-text: #eee;
+    --login-bg-gradient: linear-gradient(135deg, #0f0c1c, #2a2a3a);
+    /* Daha koyu arka plan */
 }
 
 .login-page-wrapper * {

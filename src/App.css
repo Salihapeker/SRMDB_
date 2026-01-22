@@ -1,33 +1,74 @@
 /* src/App.css */
+:root {
+  /* Renk Paleti - Light Mode */
+  --bg-primary: #f4f4f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #121212;
+  --text-secondary: #555555;
+  --accent-color: #6c5ce7;
+  --accent-hover: #5a4ad1;
+  --border-color: #e0e0e0;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* Özel bileşenler */
+  --header-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+  --input-bg: #f9f9f9;
+  --modal-bg: #ffffff;
+}
+
+[data-theme='dark'] {
+  /* Renk Paleti - Dark Mode */
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-card: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --accent-color: #bb86fc;
+  --accent-hover: #9f66e3;
+  --border-color: #333333;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+
+  /* Özel bileşenler */
+  --header-bg: #1f1c2c;
+  /* Eski header rengi */
+  --sidebar-bg: #1e1e1e;
+  --input-bg: #2c2c2c;
+  --modal-bg: #252525;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .app-container {
   font-family: 'Segoe UI', sans-serif;
   position: relative;
   width: 100%;
   height: 100vh;
-  background: #000; /* Koyu arka plan, LightRays efektini öne çıkarır */
-  overflow: auto; /* İçerik taşarsa kaydırma çubuğu ekler */
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: auto;
 }
 
-/* Logo stilleri */
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-/* Başlık (header) stilleri */
+/* Header */
 header {
-  background-color: #1f1c2c; /* Mevcut koyu renk tonu */
-  color: white;
+  background-color: var(--header-bg);
+  color: var(--text-primary);
   padding: 20px;
-  border-bottom: 3px solid #5b2ecc;
+  border-bottom: 3px solid var(--accent-color);
   position: relative;
-  z-index: 10; /* LightRays'ın üstünde görünmesi için */
+  z-index: 10;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .header-menu {
@@ -35,12 +76,13 @@ header {
   justify-content: space-between;
   align-items: center;
   max-width: 1200px;
-  margin: 0 auto; /* Ortalanmış içerik */
+  margin: 0 auto;
 }
 
 .header-menu h1 {
   font-size: 1.8rem;
   margin: 0;
+  color: var(--text-primary);
 }
 
 nav ul {
@@ -55,32 +97,69 @@ nav ul li {
 }
 
 nav ul li a {
-  color: #5b2ecc;
+  color: var(--accent-color);
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.3s ease;
 }
 
 nav ul li a:hover {
-  color: #3f1fa3;
+  color: var(--accent-hover);
 }
 
 /* Genel içerik stilleri */
 .App {
   text-align: center;
   position: relative;
-  z-index: 10; /* İçeriğin LightRays'ın üstünde kalmasını sağlar */
-  color: white; /* Işık huzmeleriyle kontrast için açık renk */
+  z-index: 10;
+  color: var(--text-primary);
 }
 
-/* Bağlantı stilleri */
-.App-link {
-  color: #61dafb;
-  text-decoration: none;
+/* Kartlar ve Konteynerler için genel sınıflar */
+.card {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.App-link:hover {
-  text-decoration: underline;
+/* Butonlar */
+button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--accent-hover);
+}
+
+/* Form Elemanları */
+input,
+select,
+textarea {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
 }
 
 /* Logo animasyonu */
@@ -88,19 +167,38 @@ nav ul li a:hover {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
-/* LightRays kapsayıcı için ek stil (isteğe bağlı, çakışmayı önlemek için) */
+/* LightRays kapsayıcı */
 .light-rays-container {
   width: 100%;
   height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1; /* LightRays arka planda kalır */
-  pointer-events: none; /* Fare etkileşimlerini engellemez */
+  z-index: 1;
+  pointer-events: none;
   overflow: hidden;
+}
+
+/* Scrollbar özelleştirme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
 }
