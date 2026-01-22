@@ -1,204 +1,130 @@
 /* src/App.css */
-:root {
-  /* Renk Paleti - Light Mode */
-  --bg-primary: #f4f4f9;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #121212;
-  --text-secondary: #555555;
-  --accent-color: #6c5ce7;
-  --accent-hover: #5a4ad1;
-  --border-color: #e0e0e0;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-  /* Özel bileşenler */
-  --header-bg: #ffffff;
-  --sidebar-bg: #ffffff;
-  --input-bg: #f9f9f9;
-  --modal-bg: #ffffff;
-}
-
-[data-theme='dark'] {
-  /* Renk Paleti - Dark Mode */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #252525;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --accent-color: #bb86fc;
-  --accent-hover: #9f66e3;
-  --border-color: #333333;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
-
-  /* Özel bileşenler */
-  --header-bg: #1f1c2c;
-  /* Eski header rengi */
-  --sidebar-bg: #1e1e1e;
-  --input-bg: #2c2c2c;
-  --modal-bg: #252525;
-}
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+/* Main app container - uses global theme from global.css */
 
 .app-container {
-  font-family: 'Segoe UI', sans-serif;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   width: 100%;
-  height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  overflow: auto;
-}
-
-/* Header */
-header {
-  background-color: var(--header-bg);
-  color: var(--text-primary);
-  padding: 20px;
-  border-bottom: 3px solid var(--accent-color);
   position: relative;
-  z-index: 10;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.header-menu {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header-menu h1 {
-  font-size: 1.8rem;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-nav ul li {
-  display: inline;
-  margin-left: 20px;
-}
-
-nav ul li a {
-  color: var(--accent-color);
-  text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-nav ul li a:hover {
-  color: var(--accent-hover);
-}
-
-/* Genel içerik stilleri */
-.App {
-  text-align: center;
-  position: relative;
-  z-index: 10;
-  color: var(--text-primary);
-}
-
-/* Kartlar ve Konteynerler için genel sınıflar */
-.card {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Butonlar */
-button {
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-}
-
-button:hover {
-  background-color: var(--accent-hover);
-}
-
-/* Form Elemanları */
-input,
-select,
-textarea {
-  background-color: var(--input-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  padding: 10px;
-  border-radius: 5px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
-}
-
-/* Logo animasyonu */
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* LightRays kapsayıcı */
-.light-rays-container {
-  width: 100%;
-  height: 100%;
-  position: absolute;
+/* LightRays background */
+.light-rays-background {
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-/* Scrollbar özelleştirme */
-::-webkit-scrollbar {
-  width: 8px;
+/* Main content area */
+.app-container > * {
+  position: relative;
+  z-index: 1;
 }
 
-::-webkit-scrollbar-track {
+/* Loading states */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
   background: var(--bg-primary);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
-  border-radius: 4px;
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-hover);
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--bg-tertiary);
+  border-top-color: var(--primary-color);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-content p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+/* Error pages */
+.error-404 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-404 h1 {
+  font-size: var(--font-size-4xl);
+  margin-bottom: 1rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.error-404 p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+  margin-bottom: 2rem;
+}
+
+/* Legacy support - keeping for backward compatibility */
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
+}
+
+/* Ensure pages don't overlap with header/footer */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+  }
+
+  .error-404 h1 {
+    font-size: var(--font-size-3xl);
+  }
 }
