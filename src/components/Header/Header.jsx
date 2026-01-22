@@ -21,7 +21,7 @@ const Header = ({ user, onLogout }) => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Close user menu when clicking outside
+  // Close user menu when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (userMenuOpen && !e.target.closest('.header__user-menu')) {
@@ -29,8 +29,18 @@ const Header = ({ user, onLogout }) => {
       }
     };
     
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && userMenuOpen) {
+        setUserMenuOpen(false);
+      }
+    };
+    
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [userMenuOpen]);
 
   const navItems = [

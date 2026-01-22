@@ -244,9 +244,12 @@ const checkAndUnlockBadges = async (userId) => {
     const totalReviews = stats.totalReviews || 0;
     const partnerWatched = stats.partnerWatched || user.library?.watchedTogether?.length || 0;
     const currentStreak = stats.currentStreak || 0;
-    const libraryCount = (user.library?.favorites?.length || 0) + 
-                        (user.library?.watchlist?.length || 0) + 
-                        (user.library?.watched?.length || 0);
+    
+    // Calculate unique library items (avoid double counting)
+    const uniqueLibraryItems = new Set();
+    if (user.library?.favorites) user.library.favorites.forEach(item => uniqueLibraryItems.add(item.id));
+    if (user.library?.watchlist) user.library.watchlist.forEach(item => uniqueLibraryItems.add(item.id));
+    const libraryCount = uniqueLibraryItems.size;
 
     const userBadges = user.badges || [];
     const unlockedBadgeIds = userBadges.map(b => b.id);
@@ -714,8 +717,10 @@ app.post("/api/library/:category", authMiddleware, async (req, res) => {
       const lastWatch = user.stats.lastWatchDate ? new Date(user.stats.lastWatchDate) : null;
       
       if (lastWatch) {
-        lastWatch.setHours(0, 0, 0, 0);
-        const daysDiff = Math.floor((today - lastWatch) / (1000 * 60 * 60 * 24));
+        // Create a new Date to avoid modifying the original
+        const lastWatchDate = new Date(lastWatch);
+        lastWatchDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.floor((today - lastWatchDate) / (1000 * 60 * 60 * 24));
         
         if (daysDiff === 1) {
           user.stats.currentStreak = (user.stats.currentStreak || 0) + 1;

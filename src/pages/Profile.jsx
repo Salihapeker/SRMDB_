@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import API from '../services/api';
 import Badge from '../components/Badge';
+import { toast } from 'react-toastify';
 import './Profile.css';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const Profile = ({ user, setUser }) => {
   const [uploading, setUploading] = useState(false);
@@ -12,15 +15,15 @@ const Profile = ({ user, setUser }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Dosya boyutu 5MB\'dan küçük olmalıdır.');
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır.');
       return;
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Lütfen geçerli bir resim dosyası seçin.');
+      toast.error('Lütfen geçerli bir resim dosyası seçin.');
       return;
     }
 
@@ -36,10 +39,10 @@ const Profile = ({ user, setUser }) => {
         });
 
         setUser({ ...user, profilePicture: response.data.profilePicture });
-        alert('Profil fotoğrafı başarıyla güncellendi!');
+        toast.success('Profil fotoğrafı başarıyla güncellendi!');
       } catch (error) {
         console.error('Profile picture upload error:', error);
-        alert('Profil fotoğrafı yüklenirken bir hata oluştu.');
+        toast.error('Profil fotoğrafı yüklenirken bir hata oluştu.');
         setPreviewUrl(user?.profilePicture || '');
       } finally {
         setUploading(false);

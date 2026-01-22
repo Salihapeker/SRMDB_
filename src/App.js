@@ -329,7 +329,8 @@ function AppContent() {
         favorites: [],
         disliked: [],
       });
-      window.location.href = '/login';
+      // Force a hard reload to clear all state
+      window.location.replace('/login');
     }
   }, []);
 
