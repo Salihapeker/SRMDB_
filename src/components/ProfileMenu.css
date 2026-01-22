@@ -2,18 +2,18 @@
 
 /* Variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
+  --primary-color: #F5A623;
+  --secondary-color: #FF9500;
+  --accent-color: #E91E8C;
   --error-color: #ff4d4d;
-  --bg-color: rgba(255, 255, 255, 0.05);
+  --bg-color: rgba(45, 45, 68, 0.9);
   --bg-card-light: rgba(255, 255, 255, 0.95);
-  --bg-card-dark: rgba(20, 20, 30, 0.95);
+  --bg-card-dark: rgba(45, 45, 68, 0.95);
   --text-color: #fff;
   --text-dark: #333;
   --text-light: #fff;
-  --border-color: rgba(255, 126, 179, 0.2);
-  --shadow-heavy: 0 8px 25px rgba(255, 126, 179, 0.15);
+  --border-color: rgba(245, 166, 35, 0.2);
+  --shadow-heavy: 0 8px 25px rgba(245, 166, 35, 0.15);
   --transition-normal: 0.3s ease-in-out;
   --transition-fast: 0.2s ease-in-out;
   --radius-md: 8px;
@@ -50,7 +50,7 @@
   gap: var(--spacing-sm);
   min-width: 120px;
   min-height: 44px;
-  box-shadow: 0 6px 15px rgba(255, 126, 179, 0.3);
+  box-shadow: 0 6px 15px rgba(245, 166, 35, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -64,7 +64,7 @@
 }
 
 .profile-button:hover {
-  background-color: #e25990;
+  background-color: #E8940C;
   transform: scale(1.02);
 }
 
@@ -72,7 +72,7 @@
   width: 32px;
   height: 32px;
   object-fit: cover;
-  background: linear-gradient(45deg, #1f1c2c, var(--accent-color));
+  background: linear-gradient(45deg, #1A1A2E, var(--accent-color));
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
@@ -169,7 +169,7 @@
   height: 60px;
   margin: 0 auto 8px;
   object-fit: cover;
-  background: linear-gradient(45deg, #1f1c2c, var(--accent-color));
+  background: linear-gradient(45deg, #1A1A2E, var(--accent-color));
   border-radius: var(--radius-md);
   display: block;
 }
@@ -209,7 +209,7 @@
 }
 
 [data-theme="light"] .menu-button:hover {
-  background-color: rgba(255, 126, 179, 0.1);
+  background-color: rgba(245, 166, 35, 0.1);
 }
 
 /* Dark theme menu buttons */

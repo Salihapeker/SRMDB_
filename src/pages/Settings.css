@@ -107,7 +107,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #ff7eb3, #5b2ecc);
+  background: linear-gradient(90deg, #F5A623, #FF9500);
   transition: var(--transition-normal);
   border-radius: 44px;
   display: flex;
@@ -215,7 +215,7 @@ input:checked + .slider:before {
 }
 
 .profile-pic-label:hover {
-  background: #3f6ad8;
+  background: #E8940C;
   transform: scale(1.05);
 }
 
@@ -295,7 +295,7 @@ input:checked + .slider:before {
 .settings-form input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.3);
+  box-shadow: 0 0 10px rgba(245, 166, 35, 0.3);
   transform: scale(1.02);
 }
 
@@ -846,7 +846,7 @@ input:checked + .slider:before {
   margin-top: 10px;
 }
 .invite-btn-final {
-  background: #8e44ad;
+  background: #F5A623;
   color: white;
   padding: 8px 16px;
   border-radius: 4px;
@@ -872,7 +872,7 @@ input:checked + .slider:before {
 }
 .invite-btn-final,
 .invite-btn {
-  background: #8e44ad;
+  background: #F5A623;
   color: white;
   padding: 5px 10px;
   border: none;
@@ -915,7 +915,7 @@ input:checked + .slider:before {
 }
 
 .page-btn.active {
-  background: #007bff;
+  background: #F5A623;
   color: white;
 }
 
@@ -993,14 +993,14 @@ input:checked + .slider:before {
 
 .profile-preview-btn {
   padding: 5px 10px;
-  background: #007bff;
+  background: #F5A623;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 .view-profile-btn {
-  background-color: #4f46e5; /* Mor ton */
+  background-color: #F5A623; /* Golden tone */
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -1015,7 +1015,7 @@ input:checked + .slider:before {
 }
 
 .view-profile-btn:hover {
-  background-color: #4338ca; /* daha koyu mor */
+  background-color: #E8940C; /* darker golden */
   transform: translateY(-2px);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -1032,7 +1032,7 @@ input:checked + .slider:before {
 }
 
 .invite-from-profile-btn {
-  background-color: #ec4899; /* canlı pembe */
+  background-color: #E91E8C; /* vibrant pink */
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -1047,7 +1047,7 @@ input:checked + .slider:before {
 }
 
 .invite-from-profile-btn:hover {
-  background-color: #db2777; /* daha koyu pembe */
+  background-color: #D81B7A; /* darker pink */
   transform: translateY(-2px);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -1273,7 +1273,7 @@ input:checked + .slider:before {
 .withdraw-invite-btn {
   margin-left: 10px;
   padding: 5px 10px;
-  background-color: #ff7eb3;
+  background-color: #F5A623;
   color: white;
   border: none;
   border-radius: 4px;
@@ -1282,7 +1282,7 @@ input:checked + .slider:before {
 }
 
 .withdraw-invite-btn:hover {
-  background-color: #c82333;
+  background-color: #E8940C;
 }
 
 .withdraw-invite-btn:disabled {

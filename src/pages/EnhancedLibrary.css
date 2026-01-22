@@ -2,10 +2,10 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
-  --bg-color: rgba(255, 255, 255, 0.05);
+  --primary-color: #F5A623;
+  --secondary-color: #FF9500;
+  --accent-color: #E91E8C;
+  --bg-color: rgba(45, 45, 68, 0.9);
   
   --text-color: white;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -411,7 +411,7 @@
 .action-btn {
   padding: 10px 15px;
   border-radius: 20px;
-  background: linear-gradient(90deg, #4a90e2, #ff7eb3);
+  background: linear-gradient(90deg, #FF9500, #F5A623);
   color: white;
   border: none;
   cursor: pointer;

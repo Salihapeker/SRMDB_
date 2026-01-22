@@ -33,21 +33,21 @@
 
 /* -------- LIGHT THEME -------- */
 [data-theme="light"] {
-  --primary-color: #8b5cf6;
-  /* neon mor */
-  --secondary-color: #ec4899;
-  /* neon pembe */
-  --accent-color: #0ea5e9;
-  /* neon mavi */
+  --primary-color: #E8940C;
+  /* golden */
+  --secondary-color: #FF9500;
+  /* orange */
+  --accent-color: #D81B7A;
+  /* pink accent */
 
   --bg-gradient: linear-gradient(135deg,
-      #e0c3fc,
-      #8ec5fc);
-  /* mor ↔ mavi hologram hissi */
-  --bg-color: #f0f4ff;
-  /* soft açık mavi ton */
+      #FFF8E7,
+      #FFE4B5);
+  /* golden light gradient */
+  --bg-color: #FFF8E7;
+  /* soft golden tone */
   --bg-card: #ffffff;
-  /* parlak kartlar */
+  /* bright cards */
 
   --text-color: #1f2937;
   --text-secondary: #374151;
@@ -63,22 +63,22 @@
 
 /* -------- DARK THEME -------- */
 [data-theme="dark"] {
-  --primary-color: #a78bfa;
-  /* neon mor */
-  --secondary-color: #f472b6;
-  /* neon pembe */
-  --accent-color: #38bdf8;
-  /* neon cyan */
+  --primary-color: #F5A623;
+  /* golden */
+  --secondary-color: #FF9500;
+  /* orange */
+  --accent-color: #E91E8C;
+  /* pink accent */
 
   --bg-gradient: linear-gradient(135deg,
-      #0f0c29,
-      #302b63,
-      #24243e);
-  /* gece + galaksi hissi */
-  --bg-color: #1a1a2e;
-  /* koyu gece mavi-mor tonları */
-  --bg-card: rgba(30, 30, 50, 0.95);
-  /* hafif transparan kart */
+      #1A1A2E,
+      #16213E,
+      #0F0F1A);
+  /* dark night gradient */
+  --bg-color: #1A1A2E;
+  /* dark blue-black */
+  --bg-card: rgba(45, 45, 68, 0.9);
+  /* semi-transparent card */
 
   --text-color: #f8fafc;
   --text-secondary: #d1d5db;
@@ -250,7 +250,7 @@
 .filters select:focus,
 .modal input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 126, 179, 0.3);
+  box-shadow: 0 0 10px rgba(245, 166, 35, 0.3);
 }
 
 .filters button {
@@ -266,7 +266,7 @@
 }
 
 .filters button:hover {
-  background: #ec4899;
+  background: #FF9500;
 }
 
 /* Movie List */
@@ -380,8 +380,8 @@
 }
 
 .badge.watchlist {
-  background: linear-gradient(45deg, #4a90e2, #64b5f6);
-  border-color: #1976d2;
+  background: linear-gradient(45deg, #FF9500, #FFA500);
+  border-color: #E8940C;
 }
 
 .badge.watched {
@@ -390,8 +390,8 @@
 }
 
 .badge.watched-together {
-  background: linear-gradient(45deg, #ff1493, #ff69b4);
-  border-color: #c2185b;
+  background: linear-gradient(45deg, #E91E8C, #FF69B4);
+  border-color: #D81B7A;
   animation: pulse 2s infinite;
 }
 
@@ -402,15 +402,15 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7);
+    box-shadow: 0 0 0 0 rgba(233, 30, 140, 0.7);
   }
 
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 20, 147, 0);
+    box-shadow: 0 0 0 10px rgba(233, 30, 140, 0);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 20, 147, 0);
+    box-shadow: 0 0 0 0 rgba(233, 30, 140, 0);
   }
 }
 
@@ -491,7 +491,7 @@
 }
 
 .quick-btn.together {
-  background: linear-gradient(90deg, #ff1493, #ff69b4);
+  background: linear-gradient(90deg, #E91E8C, #FF69B4);
 }
 
 .quick-btn.detail {
@@ -594,7 +594,7 @@
 }
 
 .search-btn:hover {
-  background: #4a2fcc;
+  background: #E8940C;
 }
 
 .search-btn:disabled {
@@ -671,7 +671,7 @@
 }
 
 .partner-badge {
-  background: #ff1493;
+  background: #E91E8C;
   color: white;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
@@ -721,7 +721,7 @@
 }
 
 .select-user-btn:hover:not(:disabled) {
-  background: #357abd;
+  background: #E8940C;
 }
 
 .selected-user-confirmation {
@@ -765,7 +765,7 @@
 }
 
 .send-invite-btn {
-  background: #8e44ad;
+  background: #F5A623;
   color: white;
   border: none;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -776,7 +776,7 @@
 }
 
 .send-invite-btn:hover {
-  background: #6e2c8b;
+  background: #E8940C;
 }
 
 .modal-footer {
@@ -822,8 +822,8 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(135deg,
-      rgba(255, 126, 179, 0.08),
-      rgba(91, 46, 204, 0.08));
+      rgba(245, 166, 35, 0.08),
+      rgba(255, 149, 0, 0.08));
   z-index: -1;
 }
 
@@ -847,7 +847,7 @@
 .pagination-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
-  background: linear-gradient(135deg, #ff4d94, #4a2fcc);
+  background: linear-gradient(135deg, #FF9500, #E8940C);
 }
 
 .pagination-btn:disabled {
@@ -866,7 +866,7 @@
 
 .pagination-btn:first-child:hover:not(:disabled),
 .pagination-btn:last-child:hover:not(:disabled) {
-  background: linear-gradient(135deg, #357abd, #ff4d94);
+  background: linear-gradient(135deg, #E91E8C, #FF9500);
 }
 
 .page-info {
@@ -1065,7 +1065,7 @@
 .partner-search-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.25);
 }
 
 /* 🔘 Arama Butonu */

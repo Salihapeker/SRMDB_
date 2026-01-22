@@ -1,13 +1,13 @@
 /* src/App.css */
 :root {
   /* Renk Paleti - Light Mode */
-  --bg-primary: #f4f4f9;
+  --bg-primary: #FFF8E7;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
   --text-primary: #121212;
   --text-secondary: #555555;
-  --accent-color: #6c5ce7;
-  --accent-hover: #5a4ad1;
+  --accent-color: #E8940C;
+  --accent-hover: #D07B0A;
   --border-color: #e0e0e0;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -21,23 +21,23 @@
 
 [data-theme='dark'] {
   /* Renk Paleti - Dark Mode */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #252525;
+  --bg-primary: #1A1A2E;
+  --bg-secondary: #16213E;
+  --bg-card: rgba(45, 45, 68, 0.9);
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
-  --accent-color: #bb86fc;
-  --accent-hover: #9f66e3;
+  --accent-color: #F5A623;
+  --accent-hover: #FF9500;
   --border-color: #333333;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
 
   /* Özel bileşenler */
-  --header-bg: #1f1c2c;
+  --header-bg: #1A1A2E;
   /* Eski header rengi */
-  --sidebar-bg: #1e1e1e;
+  --sidebar-bg: #16213E;
   --input-bg: #2c2c2c;
-  --modal-bg: #252525;
+  --modal-bg: rgba(45, 45, 68, 0.9);
 }
 
 body {
@@ -159,7 +159,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+  box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.2);
 }
 
 /* Logo animasyonu */
@@ -195,10 +195,10 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
+  background: linear-gradient(180deg, #F5A623, #FF9500);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-hover);
+  background: linear-gradient(180deg, #FF9500, #E8940C);
 }

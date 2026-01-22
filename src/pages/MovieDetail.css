@@ -140,11 +140,11 @@
 }
 
 .watched-badge.partner {
-  background: linear-gradient(45deg, #2196f3, #64b5f6);
+  background: linear-gradient(45deg, #FF9500, #FFA500);
 }
 
 .watched-badge.together {
-  background: linear-gradient(45deg, #e91e63, #f06292);
+  background: linear-gradient(45deg, #E91E8C, #F06292);
   animation: pulse 2s infinite;
 }
 
