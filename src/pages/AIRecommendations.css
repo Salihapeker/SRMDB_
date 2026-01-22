@@ -29,7 +29,10 @@
 }
 
 .recommendations-header h1 {
-  color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: clamp(2rem, 5vw, 2.8rem);
   margin-bottom: 10px;
 }
@@ -89,11 +92,13 @@
   transition: transform var(--transition-fast), box-shadow var(--transition-normal);
   text-align: center;
   cursor: pointer;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .recommendation-card:hover {
   transform: scale(1.05);
-  box-shadow: var(--shadow-medium);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
 }
 
 .recommendation-poster {
@@ -160,17 +165,17 @@
 }
 
 .btn-small {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: var(--text-color);
   border: none;
   padding: 8px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color var(--transition-normal);
+  transition: background-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .btn-small:hover {
-  background-color: var(--secondary-color);
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
 }
 
 .btn-small:focus-visible {

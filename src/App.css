@@ -1,13 +1,17 @@
 /* src/App.css */
 :root {
-  /* Renk Paleti - Light Mode */
+  /* Primary Colors - Neon Theme */
+  --primary-color: #667eea;      /* Mor */
+  --secondary-color: #f953c6;    /* Pembe */
+  --accent-color: #00d4ff;       /* Cyan */
+  
+  /* Backgrounds - Light Mode */
   --bg-primary: #f4f4f9;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
   --text-primary: #121212;
   --text-secondary: #555555;
-  --accent-color: #6c5ce7;
-  --accent-hover: #5a4ad1;
+  --accent-hover: #764ba2;
   --border-color: #e0e0e0;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -20,24 +24,40 @@
 }
 
 [data-theme='dark'] {
-  /* Renk Paleti - Dark Mode */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #252525;
+  /* Primary Colors - Neon Theme */
+  --primary-color: #667eea;      /* Mor */
+  --secondary-color: #f953c6;    /* Pembe */
+  --accent-color: #00d4ff;       /* Cyan */
+  
+  /* Backgrounds - Neon Dark Mode */
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #12121f;
+  --bg-card: rgba(20, 20, 40, 0.85);
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%);
+  --gradient-secondary: linear-gradient(135deg, #00d4ff 0%, #667eea 100%);
+  
+  /* Glow Effects */
+  --glow-primary: 0 0 30px rgba(102, 126, 234, 0.4);
+  --glow-secondary: 0 0 30px rgba(249, 83, 198, 0.4);
+  
+  /* Text */
   --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --accent-color: #bb86fc;
-  --accent-hover: #9f66e3;
-  --border-color: #333333;
+  --text-secondary: #b0b0c0;
+  --text-muted: #6b6b80;
+  
+  /* Borders */
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-hover: #764ba2;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
 
   /* Özel bileşenler */
-  --header-bg: #1f1c2c;
-  /* Eski header rengi */
-  --sidebar-bg: #1e1e1e;
-  --input-bg: #2c2c2c;
-  --modal-bg: #252525;
+  --header-bg: #12121f;
+  --sidebar-bg: #12121f;
+  --input-bg: rgba(20, 20, 40, 0.85);
+  --modal-bg: rgba(20, 20, 40, 0.85);
 }
 
 body {
@@ -69,6 +89,7 @@ header {
   position: relative;
   z-index: 10;
   transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: var(--glow-primary, 0 0 30px rgba(102, 126, 234, 0.2));
 }
 
 .header-menu {
@@ -123,22 +144,25 @@ nav ul li a:hover {
   padding: 20px;
   box-shadow: var(--shadow-sm);
   transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Butonlar */
 button {
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background-color: var(--accent-hover);
+  box-shadow: var(--glow-primary, 0 0 20px rgba(102, 126, 234, 0.5));
+  transform: translateY(-2px);
 }
 
 /* Form Elemanları */

@@ -2,14 +2,15 @@
 
 /* Root variables */
 :root {
-  --primary-color: #ff7eb3;
-  --secondary-color: #5b2ecc;
-  --accent-color: #4a90e2;
-  --bg-color: rgba(255, 255, 255, 0.05);
+  --primary-color: #667eea;
+  --secondary-color: #f953c6;
+  --accent-color: #00d4ff;
+  --bg-color: rgba(20, 20, 40, 0.85);
   
   --text-color: white;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   --font-size-heading: clamp(1.2rem, 3vw, 1.5rem);
+  --glow-primary: 0 0 30px rgba(102, 126, 234, 0.4);
 }
 
 
@@ -42,7 +43,10 @@
 }
 
 .library-header h1 {
-  color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: clamp(2rem, 5vw, 2.8rem);
   margin-bottom: 10px;
 }
@@ -120,11 +124,13 @@
   text-align: center;
   color: #757575; /* Dinamik metin rengi */
   cursor: pointer;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .enhanced-movie-card:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 .card-poster {
@@ -411,13 +417,14 @@
 .action-btn {
   padding: 10px 15px;
   border-radius: 20px;
-  background: linear-gradient(90deg, #4a90e2, #ff7eb3);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .action-btn:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
 }
