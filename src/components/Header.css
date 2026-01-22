@@ -1,0 +1,132 @@
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #16213E 0%, #1A1A2E 100%);
+  padding: 0 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #F5A623;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  font-size: 32px;
+}
+
+.logo-text {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #F5A623 0%, #FF9500 50%, #E91E8C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.main-nav {
+  display: flex;
+  gap: 30px;
+}
+
+.main-nav a {
+  color: #B0B0B0;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.main-nav a:hover {
+  color: #F5A623;
+  background: rgba(245, 166, 35, 0.1);
+}
+
+.main-nav a.active {
+  color: #F5A623;
+  background: rgba(245, 166, 35, 0.15);
+  border-bottom: 2px solid #F5A623;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  font-size: 24px;
+}
+
+.user-name {
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.login-btn, .logout-btn {
+  background: linear-gradient(90deg, #F5A623 0%, #FF9500 100%);
+  color: #1A1A2E;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.login-btn:hover, .logout-btn:hover {
+  background: linear-gradient(90deg, #FF9500 0%, #E91E8C 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 10px;
+  }
+  
+  .main-nav {
+    gap: 15px;
+  }
+  
+  .main-nav a {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+  }
+  
+  .logo-icon {
+    font-size: 28px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+}

@@ -30,6 +30,7 @@ const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
 const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
 const PersonDetail = React.lazy(() => import("./pages/PersonDetail"));
+const Header = React.lazy(() => import("./components/Header"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -310,6 +311,19 @@ function AppContent() {
     [createSystemNotification, checkUserSession]
   );
 
+  const handleLogout = useCallback(() => {
+    console.log("⚡ Çıkış yapılıyor...");
+    
+    API.post("/api/auth/logout").catch((error) => {
+      console.warn("⚠️ Logout hatası:", error);
+    });
+    
+    authHelpers.clearAuth();
+    setUser(null);
+    setIsAuthenticated(false);
+    window.location.href = "/login";
+  }, []);
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -353,7 +367,7 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+      {isAuthenticated && user && <Header user={user} onLogout={handleLogout} />}
 
       <Suspense fallback={
         <div className="loading-container">
