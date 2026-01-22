@@ -76,6 +76,8 @@ JWT_SECRET=your_jwt_secret_here
 PORT=5000
 NODE_ENV=development
 TMDB_API_KEY=your_tmdb_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 SECRET_KEY=your_custom_secret_key
 
 ✅ Frontend için .env.example

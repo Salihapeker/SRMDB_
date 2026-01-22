@@ -13,6 +13,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk");
 
 // Environment kontrolü ve Yükleme - EN BAŞA ALINDI
 console.log("DEBUG - CWD:", process.cwd());
@@ -25,7 +26,11 @@ const SECRET_KEY = process.env.JWT_SECRET || "fallback-secret-key";
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 
+// Groq client (Gemini fallback)
+const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+
 console.log("DEBUG - GEMINI Key Loaded:", process.env.GEMINI_API_KEY ? "YES (Length: " + process.env.GEMINI_API_KEY.length + ")" : "NO");
+console.log("DEBUG - GROQ Key Loaded:", process.env.GROQ_API_KEY ? "YES (Length: " + process.env.GROQ_API_KEY.length + ")" : "NO");
 console.log("DEBUG - TMDB Key Loaded:", TMDB_API_KEY ? "YES" : "NO");
 
 if (!process.env.JWT_SECRET) {
@@ -1975,6 +1980,88 @@ async function generateRecommendations(favorites, watched, limit = 10) {
   } catch (error) {
     console.error("❌ Gemini recommendation error:", error);
     // Hata durumunda eski yönteme (fallback) düş
+  }
+
+  // Groq Fallback (Gemini başarısız olduğunda)
+  if (groq) {
+    try {
+      console.log("🤖 Groq ile öneriler hazırlanıyor...");
+      
+      const userProfile = {
+        favorites: favorites.slice(0, 10).map(f => f.title),
+        watched: watched.slice(0, 10).map(w => w.title),
+        recent: watched.slice(0, 5).map(w => w.title)
+      };
+
+      const prompt = `
+        Film öneri uzmanısın. Kullanıcı profiline göre ${limit} adet öneri JSON array olarak döndür.
+        
+        Favoriler: ${userProfile.favorites.join(", ")}
+        Son İzlenenler: ${userProfile.recent.join(", ")}
+        
+        Kurallar:
+        1. Format: [{ "original_title": "Film Adı", "reason": "Kısa Türkçe neden" }]
+        2. Favori/İzlenenlerden önerme.
+        3. Çeşitli tür/yıl seç.
+        4. Sadece saf JSON array döndür. Markdown yok.
+      `;
+
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        model: "llama-3.3-70b-versatile",  // Groq'un en iyi ücretsiz modeli
+      });
+
+      let text = chatCompletion.choices[0]?.message?.content || "";
+      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+      console.log("DEBUG - Groq Response Text:", text);
+
+      let aiRecommendations = [];
+      try {
+        aiRecommendations = JSON.parse(text);
+      } catch (err) {
+        console.error("DEBUG - Groq JSON Parse Error:", err);
+        throw new Error("Groq JSON parse failed");
+      }
+
+      console.log(`🤖 Groq ${aiRecommendations.length} öneri sundu.`);
+
+      // TMDB'den detayları çek
+      const enrichmentPromises = aiRecommendations.map(async (rec) => {
+        try {
+          const searchRes = await axios.get(
+            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(rec.original_title)}&language=tr-TR`
+          );
+
+          if (searchRes.data.results && searchRes.data.results.length > 0) {
+            const movie = searchRes.data.results[0];
+            return {
+              movie: {
+                id: movie.id.toString(),
+                title: movie.title,
+                poster_path: movie.poster_path,
+                release_date: movie.release_date,
+                vote_average: movie.vote_average,
+                type: "movie",
+              },
+              reason: rec.reason
+            };
+          }
+        } catch (tmdbError) {
+          console.warn(`TMDB search failed for ${rec.original_title}`);
+        }
+        return null;
+      });
+
+      const results = await Promise.all(enrichmentPromises);
+      const enrichedRecommendations = results.filter(item => item !== null);
+
+      if (enrichedRecommendations.length > 0) {
+        return { recommendations: enrichedRecommendations, source: "groq" };
+      }
+    } catch (groqError) {
+      console.error("❌ Groq error:", groqError.message);
+    }
   }
 
   // FALLBACK: Eski mantık (TMDB Similar)
