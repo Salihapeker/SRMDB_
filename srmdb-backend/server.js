@@ -1875,13 +1875,11 @@ async function generateRecommendations(favorites, watched, limit = 10) {
 
       // Model rotasyonu - Sırayla dene
       const modelsToTry = [
-        "gemini-2.0-flash-exp",
-        "gemini-exp-1206",
-        "gemini-1.5-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-pro",
-        "gemini-1.5-pro-latest",
-        "gemini-pro"
+        "gemini-2.0-flash",           // En yeni, hızlı ve ücretsiz
+        "gemini-2.0-flash-lite",      // Daha hafif, ücretsiz
+        "gemini-1.5-flash-002",       // Stabil flash model, ücretsiz
+        "gemini-1.5-flash-8b",        // Küçük ve hızlı, ücretsiz
+        "gemini-1.5-pro-002"          // Pro model, ücretsiz tier'da kullanılabilir
       ];
 
       for (const modelName of modelsToTry) {
