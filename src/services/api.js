@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL:
     process.env.REACT_APP_API_URL ||
     (process.env.NODE_ENV === "production"
-      ? "https://srmdb.onrender.com"
+      ? "https://srmdb-backend.onrender.com"
       : "http://localhost:5000"),
   withCredentials: true, // Cookie'leri gönder
   timeout: 15000,

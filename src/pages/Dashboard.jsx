@@ -567,10 +567,12 @@ const Dashboard = ({
           placeholder="Film veya Dizi Ara"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Film veya Dizi Ara"
         />
         <select
           value={mediaType}
           onChange={(e) => setMediaType(e.target.value)}
+          aria-label="Medya Türü Seçin"
         >
           <option value="movie">Film</option>
           <option value="tv">Dizi</option>
@@ -580,6 +582,7 @@ const Dashboard = ({
           placeholder="Yıl"
           value={year}
           onChange={(e) => setYear(e.target.value)}
+          aria-label="Yapım Yılı"
         />
         <input
           type="number"
@@ -589,8 +592,13 @@ const Dashboard = ({
           max="10"
           value={minRating}
           onChange={(e) => setMinRating(e.target.value)}
+          aria-label="Minimum Puan"
         />
-        <select value={genre} onChange={(e) => setGenre(e.target.value)}>
+        <select
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
+          aria-label="Tür Seçin"
+        >
           <option value="">Tür Seçin</option>
           <option value="28">Aksiyon</option>
           <option value="35">Komedi</option>
