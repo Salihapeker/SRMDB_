@@ -68,6 +68,10 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
   
+  /* ===== Layout ===== */
+  --header-height: 70px;
+  --header-offset: 80px; /* Header height + margin */
+  
   /* ===== Typography ===== */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-size-xs: 0.75rem;
@@ -96,6 +100,10 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -106,6 +114,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -19,6 +19,7 @@
     background-attachment: fixed;
     font-family: "Segoe UI", "Roboto", sans-serif;
     color: var(--login-text);
+    padding-top: var(--header-offset);
 }
 
 /* Dark mode specific for login wrapper */

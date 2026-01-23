@@ -17,30 +17,30 @@
   }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
+/* Register page wrapper */
+.register-page {
+  padding-top: var(--header-offset);
+  min-height: calc(100vh - var(--header-offset));
   width: 100%;
   background: var(--bg-gradient);
   background-attachment: fixed;
   font-family: "Segoe UI", "Roboto", sans-serif;
   color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-page * {
+  box-sizing: border-box;
 }
 
 /* Register genel yerleşim */
 .register-container {
   text-align: center;
-  margin-top: 100px;
+  width: 100%;
   max-width: clamp(300px, 80vw, 450px);
   /* Fluid width */
-  margin-left: auto;
-  margin-right: auto;
   padding: 30px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
