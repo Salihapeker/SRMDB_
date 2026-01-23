@@ -25,7 +25,6 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
@@ -377,12 +376,8 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && (
-        <>
-          <Header user={user} onLogout={handleLogout} />
-          <ProfileMenu user={user} setUser={updateUser} />
-        </>
-      )}
+      {/* Header shown on all pages, with user data when authenticated */}
+      <Header user={isAuthenticated ? user : null} onLogout={handleLogout} />
 
       <Suspense fallback={
         <div className="loading-container">
@@ -533,7 +528,8 @@ function AppContent() {
         </Routes>
       </Suspense>
 
-      {isAuthenticated && <Footer />}
+      {/* Footer shown on all pages */}
+      <Footer />
     </main>
   );
 }
