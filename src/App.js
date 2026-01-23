@@ -4,7 +4,7 @@ import React, {
   useCallback,
   createContext,
   useContext,
-  Suspense, // Eklendi
+  Suspense,
 } from "react";
 import {
   BrowserRouter as Router,
@@ -13,6 +13,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
+import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
 import "./components/LightRays.css";
 import "./App.css";
 import API, { authHelpers } from "./services/api";
@@ -23,13 +25,14 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
 const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
 const PersonDetail = React.lazy(() => import("./pages/PersonDetail"));
+const Badges = React.lazy(() => import("./pages/Badges"));
+const Profile = React.lazy(() => import("./pages/Profile"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -310,6 +313,26 @@ function AppContent() {
     [createSystemNotification, checkUserSession]
   );
 
+  const handleLogout = useCallback(async () => {
+    try {
+      await API.post('/api/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      authHelpers.clearAuth();
+      setUser(null);
+      setIsAuthenticated(false);
+      setLibraryItems({
+        watched: [],
+        watchlist: [],
+        favorites: [],
+        disliked: [],
+      });
+      // Force a hard reload to clear all state
+      window.location.replace('/login');
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -353,7 +376,8 @@ function AppContent() {
         className="light-rays-background"
       />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+      {/* Header shown on all pages, with user data when authenticated */}
+      <Header user={isAuthenticated ? user : null} onLogout={handleLogout} />
 
       <Suspense fallback={
         <div className="loading-container">
@@ -425,6 +449,22 @@ function AppContent() {
             }
           />
           <Route
+            path="/profile"
+            element={
+              <PrivateRoute user={user}>
+                <Profile user={user} setUser={updateUser} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/badges"
+            element={
+              <PrivateRoute user={user}>
+                <Badges />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/notifications"
             element={
               <PrivateRoute user={user}>
@@ -487,6 +527,9 @@ function AppContent() {
           />
         </Routes>
       </Suspense>
+
+      {/* Footer shown on all pages */}
+      <Footer />
     </main>
   );
 }
