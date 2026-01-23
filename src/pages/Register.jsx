@@ -116,10 +116,11 @@ const Register = ({ setUser }) => {
   };
 
   return (
-    <div
-      className={`register-container ${isDarkMode ? "dark-mode" : "light-mode"}`}
-    >
-      <h1>SRMDB Kayit Ol</h1>
+    <div className="register-page">
+      <div
+        className={`register-container ${isDarkMode ? "dark-mode" : "light-mode"}`}
+      >
+        <h1>SRMDB Kayit Ol</h1>
 
       <form onSubmit={handleSubmit} className="register-form">
         <input
@@ -231,6 +232,7 @@ const Register = ({ setUser }) => {
             <span className="slider-text">{isDarkMode ? "🌙" : "☀️"}</span>
           </span>
         </label>
+      </div>
       </div>
     </div>
   );
