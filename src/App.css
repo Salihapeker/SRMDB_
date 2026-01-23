@@ -9,7 +9,7 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   position: relative;
-  padding-top: 70px; /* Header height */
+  padding-top: var(--header-height);
 }
 
 /* LightRays background */

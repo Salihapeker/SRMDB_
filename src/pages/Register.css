@@ -19,8 +19,8 @@
 
 /* Register page wrapper */
 .register-page {
-  padding-top: 80px; /* Header + margin */
-  min-height: calc(100vh - 80px);
+  padding-top: var(--header-offset);
+  min-height: calc(100vh - var(--header-offset));
   width: 100%;
   background: var(--bg-gradient);
   background-attachment: fixed;
