@@ -10,6 +10,17 @@ function ProfileMenu({ user, setUser }) {
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useTheme();
 
+  // Helper to get initials
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const handleToggle = useCallback(() => {
     setIsOpen((prev) => !prev);
   }, []);
@@ -74,7 +85,9 @@ function ProfileMenu({ user, setUser }) {
             className="profile-pic-button"
           />
         ) : (
-          <span className="profile-placeholder">👤</span>
+          <div className="profile-placeholder-initials">
+            {getInitials(user.name || user.username)}
+          </div>
         )}
         <span className="profile-name">{user.name || "Profil"}</span>
         <span className="dropdown-arrow">{isOpen ? "▲" : "▼"}</span>
@@ -90,7 +103,9 @@ function ProfileMenu({ user, setUser }) {
                 className="profile-pic-menu"
               />
             ) : (
-              <div className="profile-pic-placeholder">👤</div>
+              <div className="profile-pic-placeholder-large">
+                {getInitials(user.name || user.username)}
+              </div>
             )}
             <h4>{user.name}</h4>
             <p>@{user.username}</p>

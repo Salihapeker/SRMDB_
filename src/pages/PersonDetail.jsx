@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAI } from '../context/AIContext';
 import './PersonDetail.css';
 
 const PersonDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { setContext } = useAI();
     const [person, setPerson] = useState(null);
     const [credits, setCredits] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +38,14 @@ const PersonDetail = () => {
                 const creditData = await creditRes.json();
 
                 setPerson(personData);
+
+                // Update AI Context
+                setContext({
+                    type: 'Kişi',
+                    id: id,
+                    title: personData.name
+                });
+
                 // Sort by popularity and remove duplicates/missing posters if wanted
                 const sortedCredits = (creditData.cast || [])
                     .filter(item => item.poster_path)
@@ -52,7 +62,7 @@ const PersonDetail = () => {
         if (id) {
             fetchPersonData();
         }
-    }, [id]);
+    }, [id, setContext]);
 
     if (loading) {
         return (

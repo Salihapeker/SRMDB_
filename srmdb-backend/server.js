@@ -208,6 +208,53 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+// AI CHAT ENDPOINT - GROQ IMPLEMENTATION
+app.post("/api/ai/chat", authMiddleware, async (req, res) => {
+  const { message, history } = req.body;
+  if (!message) return res.status(400).json({ message: "Mesaj gerekli" });
+
+  if (!groq) {
+    console.error("❌ Groq client not initialized (Missing API Key)");
+    return res.status(503).json({ message: "AI servisi şu an aktif değil (API Key eksik)." });
+  }
+
+  try {
+    console.log("🤖 Asking Groq AI...");
+
+    // Construct messages for Groq (OpenAI-compatible format)
+    // History sent from frontend is [{ role: 'user'|'model', parts: [{ text: '...' }] }]
+    // Groq expects [{ role: 'user'|'assistant'|'system', content: '...' }]
+
+    const formattedHistory = (history || []).map(msg => ({
+      role: msg.role === 'model' ? 'assistant' : msg.role,
+      content: msg.parts[0].text
+    }));
+
+    const messages = [
+      { role: "system", content: "Sen yardımsever, esprili ve bilgili bir sinema asistanısın. Türkçe cevap ver." },
+      ...formattedHistory,
+      { role: "user", content: message }
+    ];
+
+    const completion = await groq.chat.completions.create({
+      messages: messages,
+      model: "llama-3.3-70b-versatile", // High quality, fast
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
+
+    const reply = completion.choices[0]?.message?.content || "Cevap üretilemedi.";
+    res.json({ reply });
+
+  } catch (error) {
+    console.error("AI Chat Error (Groq):", error);
+    res.status(500).json({
+      message: "AI servisi şu an yanıt veremiyor.",
+      details: error.message
+    });
+  }
+});
+
 // HTTP Server oluştur
 const server = require("http").createServer(app);
 
@@ -454,14 +501,37 @@ app.post("/api/auth/logout", (req, res) => {
   res.status(200).json({ message: "Çıkış yapıldı" });
 });
 
-// User info
-app.get("/api/auth/me", authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id)
-      .select("username name email partner profilePicture")
-      .populate("partner", "username name profilePicture");
+// Update User Profile
+app.put("/api/user/update", authMiddleware, async (req, res) => {
+  const { username, name, email, password, profilePicture, libraryVisibility } = req.body;
 
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    if (username) user.username = username;
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (profilePicture !== undefined) user.profilePicture = profilePicture;
+    if (libraryVisibility) user.libraryVisibility = libraryVisibility;
+
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Şifre en az 6 karakter olmalı" });
+      }
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    // Return updated user object (populated same as /me endpoint)
+    await user.populate("partner", "username name profilePicture");
+
+    console.log("✅ User updated:", user.username);
     res.json({
+      message: "Profil güncellendi",
       user: {
         id: user._id,
         username: user.username,
@@ -473,6 +543,59 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
             username: user.partner.username,
             name: user.partner.name,
             profilePicture: user.partner.profilePicture,
+          }
+          : null,
+        profilePicture: user.profilePicture, // This ensures image is returned
+        libraryVisibility: user.libraryVisibility
+      },
+    });
+  } catch (error) {
+    console.error("❌ Update error:", error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Bu kullanıcı adı veya email zaten kullanımda" });
+    }
+    res.status(500).json({ message: "Güncelleme başarısız" });
+  }
+});
+
+app.get("/api/auth/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("username name email partner profilePicture libraryVisibility")
+      .populate("partner", "username name profilePicture");
+
+    // Check for pending outgoing invitations
+    const pendingInviteUser = await User.findOne({
+      notifications: {
+        $elemMatch: {
+          from: req.user._id,
+          type: "partner_request",
+          status: "pending",
+        },
+      },
+    }).select("username name profilePicture");
+
+    res.json({
+      user: {
+        id: user._id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        libraryVisibility: user.libraryVisibility, // Ensure this is returned
+        partner: user.partner
+          ? {
+            id: user.partner._id,
+            username: user.partner.username,
+            name: user.partner.name,
+            profilePicture: user.partner.profilePicture,
+          }
+          : null,
+        pendingInvite: pendingInviteUser
+          ? {
+            id: pendingInviteUser._id,
+            username: pendingInviteUser.username,
+            name: pendingInviteUser.name,
+            profilePicture: pendingInviteUser.profilePicture,
           }
           : null,
         profilePicture: user.profilePicture,
@@ -1233,6 +1356,26 @@ app.post("/api/partner/request", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Sizin veya karşı tarafın zaten partneri var" });
     }
 
+    // NEW: Check if sender has ANY pending outgoing request
+    const pendingOutgoing = await User.findOne({
+      notifications: {
+        $elemMatch: {
+          from: sender._id,
+          type: "partner_request",
+          status: "pending"
+        }
+      }
+    });
+
+    if (pendingOutgoing) {
+      return res.status(400).json({
+        message: "Zaten bekleyen bir davetiniz var. Önce onu iptal etmelisiniz."
+      });
+    }
+
+    // Check existing pending request to THIS recipient (already covered by above general check, but kept for specific error if needed, or we can rely on above)
+
+
     // Check existing pending request
     const existingRequest = recipient.notifications.find(
       (n) =>
@@ -1278,6 +1421,40 @@ app.post("/api/partner/request", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Partner davet hatası:", error);
     res.status(500).json({ message: "Sunucu hatası: Davet gönderilemedi" });
+  }
+});
+
+// 🗑️ WITHDRAW PARTNER REQUEST
+app.delete("/api/partner/request/:username", authMiddleware, async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const recipient = await User.findOne({ username });
+    if (!recipient) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    // Remove the specific notification from sender to recipient
+    const initialCount = recipient.notifications.length;
+    recipient.notifications = recipient.notifications.filter(n =>
+      !(n.type === "partner_request" &&
+        n.status === "pending" &&
+        n.from && n.from.toString() === req.user._id.toString())
+    );
+
+    if (recipient.notifications.length === initialCount) {
+      return res.status(404).json({ message: "Geri çekilecek davet bulunamadı" });
+    }
+
+    await recipient.save();
+
+    // Notify recipient
+    io.to(recipient._id.toString()).emit("notificationUpdate");
+
+    res.json({ success: true, message: "Davet geri çekildi" });
+  } catch (error) {
+    console.error("❌ Withdraw invite error:", error);
+    res.status(500).json({ message: "Davet geri çekilemedi" });
   }
 });
 
@@ -1986,7 +2163,7 @@ async function generateRecommendations(favorites, watched, limit = 10) {
   if (groq) {
     try {
       console.log("🤖 Groq ile öneriler hazırlanıyor...");
-      
+
       const userProfile = {
         favorites: favorites.slice(0, 10).map(f => f.title),
         watched: watched.slice(0, 10).map(w => w.title),

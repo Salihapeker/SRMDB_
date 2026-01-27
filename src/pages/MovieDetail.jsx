@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAI } from '../context/AIContext';
 import { toast } from 'react-toastify';
 import API from '../services/api';
 import './MovieDetail.css';
@@ -7,6 +8,7 @@ import './MovieDetail.css';
 const MovieDetail = ({ user, addToLibrary }) => {
   const { id, type } = useParams();
   const navigate = useNavigate();
+  const { setContext } = useAI();
 
   const [movieData, setMovieData] = useState(null);
   const [userReview, setUserReview] = useState({ rating: 0, comment: '' });
@@ -68,6 +70,14 @@ const MovieDetail = ({ user, addToLibrary }) => {
       const reviewResponse = await API.get(`/api/reviews/${type}/${id}`);
 
       setMovieData(tmdbData);
+
+      // Update AI Context
+      setContext({
+        type: type === 'movie' ? 'Film' : 'Dizi',
+        id: id,
+        title: tmdbData.title || tmdbData.name
+      });
+
       setUserReview(reviewResponse.data.userReview || { rating: 0, comment: '' });
       setPartnerReview(reviewResponse.data.partnerReview || null);
       setJointReview(reviewResponse.data.jointReview || { rating: 0, comment: '' });
@@ -103,7 +113,7 @@ const MovieDetail = ({ user, addToLibrary }) => {
       console.log(`Loading finished, süre: ${Date.now() - startTime}ms`);
       setLoading(false);
     }
-  }, [id, type]);
+  }, [id, type, setContext]);
 
   useEffect(() => {
     if (id && type) {

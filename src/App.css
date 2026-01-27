@@ -19,25 +19,56 @@
   --modal-bg: #ffffff;
 }
 
-[data-theme='dark'] {
-  /* Renk Paleti - Dark Mode */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #252525;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --accent-color: #bb86fc;
-  --accent-hover: #9f66e3;
-  --border-color: #333333;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+[data-theme='light'] {
+  --primary-color: #6366f1;
+  /* Indigo - More professional than purple */
+  --secondary-color: #f43f5e;
+  /* Rose - Softer than hot pink */
+  --accent-color: #0ea5e9;
+  /* Sky Blue */
 
-  /* Özel bileşenler */
-  --header-bg: #1f1c2c;
-  /* Eski header rengi */
-  --sidebar-bg: #1e1e1e;
-  --input-bg: #2c2c2c;
-  --modal-bg: #252525;
+  /* Soft Silver/Off-white Gradient - Clean & Modern */
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  /* Glassy white */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --header-bg: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme='dark'] {
+  --primary-color: #8b5cf6;
+  /* Keeping the purple/indigo accent as it's the brand, but background changes */
+  --secondary-color: #f43f5e;
+  --accent-color: #38bdf8;
+
+  /* Netflix-like Solid Deep Dark Background */
+  --bg-gradient: #141414;
+  /* No gradient, just solid */
+
+  --bg-primary: #141414;
+  --bg-secondary: #1f1f1f;
+  --bg-card: #1f1f1f;
+  /* Solid card color to avoid transparency issues causing lines */
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  /* Netflix uses this light gray for secondary text */
+  --border-color: #404040;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.7);
+  --header-bg: #141414;
+  /* Match body */
+}
+
+html {
+  background-color: var(--bg-primary);
+  height: 100%;
 }
 
 body {
@@ -47,17 +78,28 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  /* overflow-x: hidden; */
+  /* Removing hidden overflow as it can break some scrolling */
+}
+
+/* Ensure root element also covers full height */
+#root {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
 }
 
 .app-container {
   font-family: 'Segoe UI', sans-serif;
   position: relative;
   width: 100%;
-  height: 100vh;
-  background: var(--bg-primary);
+  min-height: 100vh;
+  /* Changed from height: 100vh to min-height */
+  background: transparent;
+  /* Changed from var(--bg-primary) to avoid double layers */
   color: var(--text-primary);
-  overflow: auto;
+  /* overflow: auto; */
+  /* Let body handle scroll */
 }
 
 /* Header */

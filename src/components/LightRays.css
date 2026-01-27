@@ -1,17 +1,25 @@
 .light-rays-container {
-  position: fixed;  /* ekranın üstüne sabitle */
+  position: fixed;
+  /* ekranın üstüne sabitle */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: -1;
+  /* İçeriğin arkasına at */
+  pointer-events: none;
+  /* tıklamaları engellemesin */
+  background: radial-gradient(circle at 50% 50%, rgba(20, 20, 30, 0), rgba(0, 0, 0, 0.4));
+  /* Vignette effect */
+  display: none !important;
 
-  z-index: 9999; /* en üstte kalsın */
-  pointer-events: none; /* tıklamaları engellemesin */
 }
 
 .light-rays-container canvas {
   width: 100%;
   height: 100%;
-  opacity: 0.5; /* şeffaflık - değerle oyna */
-  mix-blend-mode: screen; /* ışık efekti gibi içerikle karışsın */
+  opacity: 0.6;
+  mix-blend-mode: screen;
+  filter: blur(1px);
+  /* Biraz yumuşat */
 }

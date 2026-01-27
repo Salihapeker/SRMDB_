@@ -387,6 +387,30 @@ function Settings({ user, setUser, createSystemNotification }) {
     }
   }, [setUser, createSystemNotification]);
 
+  const handleWithdrawPending = useCallback(async () => {
+    if (!user?.pendingInvite) return;
+
+    if (!window.confirm(`${user.pendingInvite.name || user.pendingInvite.username} kişisine gönderilen daveti geri çekmek istiyor musunuz?`)) {
+      return;
+    }
+
+    try {
+      setInviteLoading(true);
+      const response = await API.delete(`/api/partner/request/${encodeURIComponent(user.pendingInvite.username)}`);
+
+      if (response.data.success) {
+        setSuccess("Davet geri çekildi!");
+        // Optimistic update
+        setUser(prev => ({ ...prev, pendingInvite: null }));
+      }
+    } catch (err) {
+      console.error("Davet geri çekme hatası:", err);
+      setError("Davet geri çekilemedi.");
+    } finally {
+      setInviteLoading(false);
+    }
+  }, [user, setUser]);
+
   if (isLoadingUser) {
     return (
       <div className="loading-container">
@@ -589,6 +613,28 @@ function Settings({ user, setUser, createSystemNotification }) {
               onClick={handleRemovePartner}
             >
               💔 Partneri Kaldır
+            </button>
+          </div>
+        ) : user?.pendingInvite ? (
+          <div className="notification-card pending-invite-status">
+            <div className="notification-info">
+              <img
+                src={user.pendingInvite.profilePicture || PLACEHOLDER_IMAGE}
+                alt="Pending"
+                className="notification-pic"
+              />
+              <div className="notification-details">
+                <span className="sender-name">Davet Gönderildi: {user.pendingInvite.name || user.pendingInvite.username}</span>
+                <span className="sender-username">@{user.pendingInvite.username}</span>
+                <p className="invitation-text">Yanıt bekleniyor...</p>
+              </div>
+            </div>
+            <button
+              className="reject-btn"
+              onClick={handleWithdrawPending}
+              disabled={inviteLoading}
+            >
+              {inviteLoading ? "İptal Ediliyor..." : "⛔ Daveti İptal Et"}
             </button>
           </div>
         ) : (

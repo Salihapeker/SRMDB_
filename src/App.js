@@ -6,6 +6,7 @@ import React, {
   useContext,
   Suspense, // Eklendi
 } from "react";
+import { AIProvider } from "./context/AIContext";
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,6 +16,9 @@ import {
 import PrivateRoute from "./components/PrivateRoute";
 import "./components/LightRays.css";
 import "./App.css";
+import "./components/HeaderFooter.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import API, { authHelpers } from "./services/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,13 +27,14 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Settings = React.lazy(() => import("./pages/Settings"));
-const ProfileMenu = React.lazy(() => import("./components/ProfileMenu"));
+// ProfileMenu moved to Header
 const LightRays = React.lazy(() => import("./components/LightRays"));
 const AIRecommendations = React.lazy(() => import("./pages/AIRecommendations"));
 const MovieDetail = React.lazy(() => import("./pages/MovieDetail"));
 const EnhancedLibrary = React.lazy(() => import("./pages/EnhancedLibrary"));
 const Notifications = React.lazy(() => import("./pages/Notifications"));
 const PersonDetail = React.lazy(() => import("./pages/PersonDetail"));
+const ChatWindow = React.lazy(() => import("./components/AIChat/ChatWindow"));
 
 // Theme Context
 const ThemeContext = createContext();
@@ -322,181 +327,196 @@ function AppContent() {
   }
 
   return (
-    <main className="app-container">
-      <ToastContainer
-        position={isMobile ? "bottom-center" : "top-right"}
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        style={isMobile ? { bottom: "80px" } : {}}
-      />
+    <div className="app-root">
+      <Header user={user} setUser={updateUser} />
 
-      <LightRays
-        raysOrigin="top-center"
-        raysColor="#ff7eb3"
-        raysSpeed={1}
-        lightSpread={1}
-        rayLength={2}
-        pulsating={true}
-        fadeDistance={1.0}
-        saturation={1.0}
-        followMouse={!isMobile}
-        mouseInfluence={isMobile ? 0 : 0.1}
-        noiseAmount={0.0}
-        distortion={0.0}
-        className="light-rays-background"
-      />
+      <main className="app-main">
+        <ToastContainer
+          position={isMobile ? "bottom-center" : "top-right"}
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+          style={isMobile ? { bottom: "80px" } : {}}
+        />
 
-      {isAuthenticated && user && <ProfileMenu user={user} setUser={updateUser} />}
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#ff7eb3"
+          raysSpeed={1}
+          lightSpread={1}
+          rayLength={2}
+          pulsating={true}
+          fadeDistance={1.0}
+          saturation={1.0}
+          followMouse={!isMobile}
+          mouseInfluence={isMobile ? 0 : 0.1}
+          noiseAmount={0.0}
+          distortion={0.0}
+          className="light-rays-background"
+        />
 
-      <Suspense fallback={
-        <div className="loading-container">
-          <div className="loading-content">
-            <div className="loading-spinner"></div>
-            <p>Yükleniyor...</p>
+        {/* ProfileMenu logic moved to Header */}
+
+        <Suspense fallback={
+          <div className="loading-container">
+            <div className="loading-content">
+              <div className="loading-spinner"></div>
+              <p>Yükleniyor...</p>
+            </div>
           </div>
-        </div>
-      }>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Login setUser={updateUser} />
-              )
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Register setUser={updateUser} />
-              )
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute user={user}>
-                <Dashboard
-                  user={user}
-                  addToLibrary={addToLibrary}
-                  removeFromLibrary={removeFromLibrary}
-                  setUser={updateUser}
-                  libraryItems={libraryItems}
-                  setLibraryItems={setLibraryItems}
-                />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/library"
-            element={
-              <PrivateRoute user={user}>
-                <EnhancedLibrary
-                  user={user}
-                  removeFromLibrary={removeFromLibrary}
-                  addToLibrary={addToLibrary}
-                  libraryItems={libraryItems}
-                />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute user={user}>
-                <Settings
-                  user={user}
-                  setUser={updateUser}
-                  createSystemNotification={createSystemNotification}
-                />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <PrivateRoute user={user}>
-                <Notifications user={user} />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/recommendations"
-            element={
-              <PrivateRoute user={user}>
-                <AIRecommendations
-                  user={user}
-                  addToLibrary={addToLibrary}
-                  libraryItems={libraryItems}
-                />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/person/:id"
-            element={
-              <PrivateRoute user={user}>
-                <PersonDetail />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/:type/:id"
-            element={
-              <PrivateRoute user={user}>
-                <MovieDetail user={user} addToLibrary={addToLibrary} />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/"
-            element={
-              <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <div className="error-404">
-                <h1>404 - Sayfa Bulunamadı</h1>
-                <p>Aradığınız sayfa mevcut değil.</p>
-                <button
-                  onClick={() =>
-                  (window.location.href = isAuthenticated
-                    ? "/dashboard"
-                    : "/login")
-                  }
-                  className="btn-primary"
-                >
-                  Ana Sayfaya Dön
-                </button>
-              </div>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </main>
+        }>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Login setUser={updateUser} />
+                )
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Register setUser={updateUser} />
+                )
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute user={user}>
+                  <Dashboard
+                    user={user}
+                    addToLibrary={addToLibrary}
+                    removeFromLibrary={removeFromLibrary}
+                    setUser={updateUser}
+                    libraryItems={libraryItems}
+                    setLibraryItems={setLibraryItems}
+                  />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/library"
+              element={
+                <PrivateRoute user={user}>
+                  <EnhancedLibrary
+                    user={user}
+                    removeFromLibrary={removeFromLibrary}
+                    addToLibrary={addToLibrary}
+                    libraryItems={libraryItems}
+                  />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute user={user}>
+                  <Settings
+                    user={user}
+                    setUser={updateUser}
+                    createSystemNotification={createSystemNotification}
+                  />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <PrivateRoute user={user}>
+                  <Notifications user={user} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/recommendations"
+              element={
+                <PrivateRoute user={user}>
+                  <AIRecommendations
+                    user={user}
+                    addToLibrary={addToLibrary}
+                    libraryItems={libraryItems}
+                  />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/person/:id"
+              element={
+                <PrivateRoute user={user}>
+                  <PersonDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/:type/:id"
+              element={
+                <PrivateRoute user={user}>
+                  <MovieDetail user={user} addToLibrary={addToLibrary} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <div className="error-404">
+                  <h1>404 - Sayfa Bulunamadı</h1>
+                  <p>Aradığınız sayfa mevcut değil.</p>
+                  <button
+                    onClick={() =>
+                    (window.location.href = isAuthenticated
+                      ? "/dashboard"
+                      : "/login")
+                    }
+                    className="btn-primary"
+                  >
+                    Ana Sayfaya Dön
+                  </button>
+                </div>
+              }
+            />
+          </Routes>
+        </Suspense>
+
+      </main>
+
+      {isAuthenticated && (
+        <Suspense fallback={null}>
+          <ChatWindow />
+        </Suspense>
+      )}
+
+      <Footer />
+    </div>
   );
 }
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <AIProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AIProvider>
     </ThemeProvider>
   );
 }

@@ -33,6 +33,7 @@ const Dashboard = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [contentLoading, setContentLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false); // Yeni: Filtreleri aç/kapa
   const [sentRequests, setSentRequests] = useState([]); // Yeni state
 
   // İstekleri çek
@@ -429,17 +430,7 @@ const Dashboard = ({
             </button>
           )}
         </div>
-        <div className="nav-buttons">
-          <button onClick={() => navigate("/library")} className="nav-btn">
-            Kütüphane
-          </button>
-          <button
-            onClick={() => navigate("/recommendations")}
-            className="nav-btn"
-          >
-            AI Önerileri
-          </button>
-        </div>
+
       </div>
 
       {showModal && (
@@ -563,67 +554,95 @@ const Dashboard = ({
         </div>
       )}
 
-      <div className="filters">
-        <input
-          type="text"
-          placeholder="Film veya Dizi Ara"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Film veya Dizi Ara"
-        />
-        <select
-          value={mediaType}
-          onChange={(e) => setMediaType(e.target.value)}
-          aria-label="Medya Türü Seçin"
-        >
-          <option value="movie">Film</option>
-          <option value="tv">Dizi</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Yıl"
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          aria-label="Yapım Yılı"
-        />
-        <input
-          type="number"
-          placeholder="Min Puan (0-10)"
-          step="0.1"
-          min="0"
-          max="10"
-          value={minRating}
-          onChange={(e) => setMinRating(e.target.value)}
-          aria-label="Minimum Puan"
-        />
-        <select
-          value={genre}
-          onChange={(e) => setGenre(e.target.value)}
-          aria-label="Tür Seçin"
-        >
-          <option value="">Tür Seçin</option>
-          <option value="28">Aksiyon</option>
-          <option value="35">Komedi</option>
-          <option value="18">Dram</option>
-          <option value="27">Korku</option>
-          <option value="16">Animasyon</option>
-          <option value="10749">Romantik</option>
-          <option value="99">Belgesel</option>
-          <option value="878">Bilim Kurgu</option>
-          <option value="53">Gerilim</option>
-          <option value="80">Suç</option>
-          <option value="12">Macera</option>
-          <option value="14">Fantastik</option>
-        </select>
-        <button
-          onClick={() => {
-            setCurrentPage(1);
-            fetchContent(1);
-          }}
-          disabled={contentLoading}
-        >
-          {contentLoading ? "🔍..." : "🔍 Ara"}
-        </button>
+      <div className="filters-container">
+        <div className="search-bar-wrapper">
+          <div className="search-input-container">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Film, dizi veya kişi ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="main-search-input"
+            />
+          </div>
+          <button
+            className={`filter-toggle-btn ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Gelişmiş Filtreler"
+          >
+            ⚡ Filtrele
+          </button>
+        </div>
+
+        <div className={`advanced-filters ${showFilters ? 'open' : ''}`}>
+          <div className="filter-group">
+            <label>Tür</label>
+            <select
+              value={mediaType}
+              onChange={(e) => setMediaType(e.target.value)}
+            >
+              <option value="movie">Film</option>
+              <option value="tv">Dizi</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Kategori</label>
+            <select
+              value={genre}
+              onChange={(e) => setGenre(e.target.value)}
+            >
+              <option value="">Tümü</option>
+              <option value="28">Aksiyon</option>
+              <option value="35">Komedi</option>
+              <option value="18">Dram</option>
+              <option value="27">Korku</option>
+              <option value="16">Animasyon</option>
+              <option value="10749">Romantik</option>
+              <option value="99">Belgesel</option>
+              <option value="878">Bilim Kurgu</option>
+              <option value="53">Gerilim</option>
+              <option value="80">Suç</option>
+              <option value="12">Macera</option>
+              <option value="14">Fantastik</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Yıl</label>
+            <input
+              type="number"
+              placeholder="Örn: 2023"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Puan (En az)</label>
+            <input
+              type="number"
+              placeholder="0-10"
+              step="0.1"
+              min="0"
+              max="10"
+              value={minRating}
+              onChange={(e) => setMinRating(e.target.value)}
+            />
+          </div>
+
+          <button
+            className="apply-filters-btn"
+            onClick={() => {
+              setCurrentPage(1);
+              fetchContent(1);
+              // Optional: setShowFilters(false);
+            }}
+          >
+            Uygula
+          </button>
+        </div>
       </div>
 
       {totalPages > 1 && (
