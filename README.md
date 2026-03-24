@@ -105,3 +105,15 @@ Değişikliklerini commit et (git commit -m 'feat: yeni özellik eklendi')
 Branch’i pushla (git push origin feature/yenilik)
 
 Pull request aç 🎉
+
+
+<img width="1919" height="1071" alt="Ekran görüntüsü 2026-03-24 130555" src="https://github.com/user-attachments/assets/38f07919-0be1-4f4d-88cb-c44df81427af" />
+
+<img width="1919" height="1077" alt="Ekran görüntüsü 2026-03-24 130857" src="https://github.com/user-attachments/assets/284f1435-ae31-4354-a68d-5106db6271da" />
+
+<img width="1919" height="1079" alt="Ekran görüntüsü 2026-03-24 130920" src="https://github.com/user-attachments/assets/9c3305c0-d7d6-402a-8bd9-8637b8effc7b" />
+
+<img width="1919" height="1079" alt="Ekran görüntüsü 2026-03-24 131004" src="https://github.com/user-attachments/assets/556b9cd7-d7f1-4f60-b812-19dc80502d3e" />
+
+
+
