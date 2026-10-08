@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import API from '../services/api';
 import './Notifications.css';
 
-const socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', { withCredentials: true });
+const socket = io(process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://srmdb.onrender.com' : 'http://localhost:5000'), { withCredentials: true });
 
 const Notifications = ({ user }) => {
   const navigate = useNavigate();

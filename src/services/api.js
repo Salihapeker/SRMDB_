@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL:
     process.env.REACT_APP_API_URL ||
     (process.env.NODE_ENV === "production"
-      ? "https://srmdb-backend.onrender.com"
+      ? "https://srmdb.onrender.com"
       : "http://localhost:5000"),
   withCredentials: true, // Cookie'leri gönder
   timeout: 15000,
@@ -70,6 +70,21 @@ API.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+
+    // Render'ın ücretsiz sunucusu bir süre boşta kalınca uyuyor ve ilk istekte
+    // uyanması 30-60 sn sürebiliyor. Zaman aşımı/ağ hatasında bir kez,
+    // daha uzun süre bekleyerek tekrar dene.
+    if (
+      (error.code === "ECONNABORTED" || error.code === "ERR_NETWORK") &&
+      originalRequest &&
+      !originalRequest._wakeRetry &&
+      (originalRequest.method || "get").toLowerCase() === "get"
+    ) {
+      originalRequest._wakeRetry = true;
+      originalRequest.timeout = 70000;
+      console.warn("😴 Sunucu uyanıyor olabilir, tekrar deneniyor:", originalRequest.url);
+      return API(originalRequest);
+    }
 
     if (error.code === "ECONNABORTED") {
       console.error("⏱️ Request timeout:", error.config?.url);
