@@ -15,15 +15,15 @@ SRMDB (Social & Recommendation Movie Database), kullanıcıların film ve dizile
 - 👯 Ortak Kütüphane (partner davetiyle)
 - 💬 Yorum ve Değerlendirme (puanlama + emoji desteği)
 - 🎯 Kişiselleştirilmiş Öneriler (yapay zeka destekli)
-- 📱 Modern UI (React + TailwindCSS)
+- 📱 Modern UI (React, karanlık/aydınlık tema, WebGL arka plan)
 
 ## 🛠️ Teknolojiler
 
-- **Frontend:** React, React Router, TailwindCSS, Framer Motion
-- **Backend:** Node.js, Express.js
+- **Frontend:** React, React Router, Axios, Socket.IO client, OGL (WebGL)
+- **Backend:** Node.js, Express.js, Socket.IO, Mongoose
 - **Database:** MongoDB
 - **Authentication:** JWT
-- **API:** The Movie Database (TMDb)
+- **API:** The Movie Database (TMDb), Google Gemini, Groq
 
 ## 📦 Kurulum
 
