@@ -89,10 +89,45 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 // MongoDB Bağlantısı
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+// Bağlantı koparsa ya da ilk denemede başarısız olursa tekrar dener.
+// İstekler veritabanı yokken 10 sn takılıp kalmasın diye hızlıca 503 döner.
+mongoose.set("bufferCommands", false);
+
+const connectWithRetry = async (attempt = 1) => {
+  if (!process.env.MONGO_URI) {
+    console.error("❌ MONGO_URI environment variable is not set");
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    const wait = Math.min(30000, 2000 * attempt);
+    console.error(
+      `❌ MongoDB connection error (deneme ${attempt}), ${wait / 1000}s sonra tekrar denenecek:`,
+      err.message
+    );
+    setTimeout(() => connectWithRetry(attempt + 1), wait);
+  }
+};
+connectWithRetry();
+
+mongoose.connection.on("disconnected", () =>
+  console.warn("⚠️ MongoDB bağlantısı koptu, sürücü yeniden bağlanmayı deneyecek")
+);
+
+app.use((req, res, next) => {
+  const needsDb =
+    req.path.startsWith("/api/") && !req.path.startsWith("/api/health");
+  if (needsDb && mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      message: "Veritabanına şu an ulaşılamıyor, lütfen biraz sonra tekrar deneyin.",
+    });
+  }
+  next();
+});
 
 // Loglama middleware
 app.use((req, res, next) => {
